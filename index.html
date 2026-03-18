@@ -303,7 +303,7 @@
       const tr = document.createElement('tr');
       tr.innerHTML = `
         <td class="rank">${i+1}</td>
-        <td class="producto">${row.producto || '—'}</td>
+        <td class="producto">${row.producto || '—'}<br><small style="color:#8b949e;font-weight:400;font-size:0.75rem">${row.sku_id || ''}</small></td>
         <td class="canal">${row.canal_nombre || row.canal || '—'}</td>
         <td><span class="${badgeClass(row.accion)}">${row.accion || '—'}</span></td>
         <td class="motivo">${row.motivo || '—'}</td>
