@@ -1,1 +1,24 @@
-https://docs.google.com/spreadsheets/d/e/2PACX-1vSBCniMPQSL9AB-c0dD4oxxMPp6KFWhZ0POPViUhYDMRdpO9Lp83tvKv7KSS-cgP1NTjPr6VHlwSSV2/pub?gid=1322538543&single=true&output=csv
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Tablero decisiones</title>
+</head>
+<body>
+  <h1>Datos del CSV</h1>
+  <pre id="data">Cargando...</pre>
+
+  <script>
+    const csvUrl = "https://docs.google.com/spreadsheets/d/e/TU_URL/pub?gid=1322538543&single=true&output=csv";
+
+    fetch(csvUrl)
+      .then(r => r.text())
+      .then(texto => {
+        document.getElementById("data").textContent = texto;
+      })
+      .catch(err => {
+        document.getElementById("data").textContent = "Error al cargar CSV: " + err;
+      });
+  </script>
+</body>
+</html>
