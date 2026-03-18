@@ -5,128 +5,57 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Tablero de decisiones</title>
   <style>
-    body {
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
       font-family: Arial, sans-serif;
-      margin: 24px;
       background: #f7f7f7;
     }
-    h1 {
-      margin-bottom: 16px;
+
+    .header {
+      padding: 24px;
+      background: #f7f7f7;
     }
+
+    h1 {
+      margin: 0;
+      font-size: 32px;
+    }
+
+    .contenedor {
+      width: 100%;
+      height: calc(100vh - 88px);
+      padding: 0 24px 24px 24px;
+      box-sizing: border-box;
+    }
+
     .card {
+      width: 100%;
+      height: 100%;
       background: white;
-      padding: 16px;
       border-radius: 12px;
       box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-      overflow-x: auto;
+      overflow: hidden;
     }
-    table {
-      border-collapse: collapse;
+
+    iframe {
       width: 100%;
-      background: white;
-    }
-    th, td {
-      border: 1px solid #ddd;
-      padding: 10px;
-      text-align: left;
-    }
-    th {
-      background: #f0f0f0;
-    }
-    .error {
-      color: red;
-      font-weight: bold;
+      height: 100%;
+      border: 0;
     }
   </style>
 </head>
 <body>
-  <h1>Tablero de decisiones</h1>
-
-  <div class="card">
-    <div id="estado">Cargando datos...</div>
-    <div id="tabla"></div>
+  <div class="header">
+    <h1>Tablero de decisiones</h1>
   </div>
 
-  <script>
-    const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSBCniMPQSL9AB-c0dD4oxxMPp6KFWhZ0POPViUhYDMRdpO9Lp83tvKv7KSS-cgP1NTjPr6VHIwSSV2/pub?gid=1322538543&single=true&output=csv";
-
-    function parseCSV(text) {
-      const rows = [];
-      let row = [];
-      let cell = "";
-      let inQuotes = false;
-
-      for (let i = 0; i < text.length; i++) {
-        const char = text[i];
-        const nextChar = text[i + 1];
-
-        if (char === '"') {
-          if (inQuotes && nextChar === '"') {
-            cell += '"';
-            i++;
-          } else {
-            inQuotes = !inQuotes;
-          }
-        } else if (char === ',' && !inQuotes) {
-          row.push(cell);
-          cell = "";
-        } else if ((char === '\n' || char === '\r') && !inQuotes) {
-          if (char === '\r' && nextChar === '\n') i++;
-          row.push(cell);
-          if (row.some(c => c !== "")) rows.push(row);
-          row = [];
-          cell = "";
-        } else {
-          cell += char;
-        }
-      }
-
-      if (cell.length > 0 || row.length > 0) {
-        row.push(cell);
-        rows.push(row);
-      }
-
-      return rows;
-    }
-
-    fetch(csvUrl)
-      .then(response => response.text())
-      .then(texto => {
-        const limpio = texto.trim().toLowerCase();
-
-        if (limpio.startsWith("<!doctype html") || limpio.startsWith("<html")) {
-          throw new Error("La URL no devolvió CSV real.");
-        }
-
-        const data = parseCSV(texto);
-
-        if (!data.length) {
-          throw new Error("El CSV está vacío.");
-        }
-
-        const headers = data[0];
-        const rows = data.slice(1);
-
-        let html = "<table><thead><tr>";
-        headers.forEach(h => html += `<th>${h}</th>`);
-        html += "</tr></thead><tbody>";
-
-        rows.forEach(row => {
-          html += "<tr>";
-          headers.forEach((_, i) => {
-            html += `<td>${row[i] ?? ""}</td>`;
-          });
-          html += "</tr>";
-        });
-
-        html += "</tbody></table>";
-
-        document.getElementById("estado").innerHTML = "";
-        document.getElementById("tabla").innerHTML = html;
-      })
-      .catch(err => {
-        document.getElementById("estado").innerHTML = `<div class="error">${err.message}</div>`;
-      });
-  </script>
+  <div class="contenedor">
+    <div class="card">
+      <iframe src="https://docs.google.com/spreadsheets/d/e/2PACX-1vSBCniMPQSL9AB-c0dD4oxxMPp6KFWhZ0POPViUhYDMRdpO9Lp83tvKv7KSS-cgP1NTjPr6VHIwSSV2/pubhtml?gid=1322538543&single=true"></iframe>
+    </div>
+  </div>
 </body>
 </html>
