@@ -2,12 +2,384 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <title>CSV</title>
-  <script>
-    window.location.replace("https://docs.google.com/spreadsheets/d/e/2PACX-1vSBCniMPQSL9AB-c0dD4oxxMPp6KFWhZ0POPViUhYDMRdpO9Lp83tvKv7KSS-cgP1NTjPr6VHlwSSV2/pubhtml?gid=1322538543&single=true");
-  </script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Tablero de Decisiones</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #0d1117;
+      color: #e6edf3;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      min-height: 100vh;
+      padding: 0 0 40px;
+    }
+
+    header {
+      background: linear-gradient(180deg, #161b22 0%, #0d1117 100%);
+      border-bottom: 1px solid #21262d;
+      padding: 28px 24px 20px;
+      text-align: center;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    header h1 {
+      font-size: 1.7rem;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      color: #f0f6fc;
+    }
+
+    header p.subtitle {
+      font-size: 0.82rem;
+      color: #8b949e;
+      margin-top: 4px;
+    }
+
+    .filters {
+      display: flex;
+      gap: 10px;
+      padding: 16px 24px;
+      flex-wrap: wrap;
+      background: #0d1117;
+      border-bottom: 1px solid #21262d;
+    }
+
+    .filters select, .filters input {
+      background: #161b22;
+      border: 1px solid #30363d;
+      color: #e6edf3;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 0.82rem;
+      outline: none;
+      cursor: pointer;
+    }
+
+    .filters select:focus, .filters input:focus {
+      border-color: #58a6ff;
+    }
+
+    .filters label {
+      font-size: 0.78rem;
+      color: #8b949e;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      padding: 0 24px;
+      margin-top: 16px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+    }
+
+    thead tr {
+      border-bottom: 2px solid #21262d;
+    }
+
+    thead th {
+      text-align: left;
+      padding: 10px 14px;
+      color: #8b949e;
+      font-weight: 600;
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      white-space: nowrap;
+    }
+
+    tbody tr {
+      border-bottom: 1px solid #161b22;
+      transition: background 0.15s;
+    }
+
+    tbody tr:hover {
+      background: #161b22;
+    }
+
+    tbody td {
+      padding: 12px 14px;
+      vertical-align: top;
+      color: #c9d1d9;
+    }
+
+    td.rank {
+      color: #8b949e;
+      font-weight: 700;
+      font-size: 0.9rem;
+      width: 48px;
+    }
+
+    td.producto {
+      font-weight: 600;
+      color: #f0f6fc;
+      white-space: nowrap;
+    }
+
+    td.canal {
+      color: #8b949e;
+      white-space: nowrap;
+    }
+
+    td.numero {
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+
+    td.motivo {
+      max-width: 240px;
+      font-size: 0.82rem;
+      color: #8b949e;
+      line-height: 1.4;
+    }
+
+    td.proximo {
+      max-width: 260px;
+      font-size: 0.82rem;
+      line-height: 1.4;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.4px;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .badge-PAUSAR         { background: #da3633; color: #fff; }
+    .badge-LIQUIDAR       { background: #d29922; color: #fff; }
+    .badge-RIESGO_QUIEBRE { background: #f07c00; color: #fff; }
+    .badge-EMPUJAR        { background: #238636; color: #fff; }
+    .badge-OK             { background: #1f6feb; color: #fff; }
+    .badge-AJUSTAR_PRECIO { background: #6e40c9; color: #fff; }
+    .badge-default        { background: #30363d; color: #c9d1d9; }
+
+    .loading {
+      text-align: center;
+      padding: 80px 0;
+      color: #8b949e;
+      font-size: 0.9rem;
+    }
+
+    .error {
+      text-align: center;
+      padding: 60px 24px;
+      color: #f85149;
+      font-size: 0.9rem;
+    }
+
+    .stats {
+      display: flex;
+      gap: 12px;
+      padding: 16px 24px;
+      flex-wrap: wrap;
+    }
+
+    .stat-pill {
+      background: #161b22;
+      border: 1px solid #21262d;
+      border-radius: 20px;
+      padding: 4px 14px;
+      font-size: 0.78rem;
+      color: #8b949e;
+    }
+
+    .stat-pill span {
+      color: #e6edf3;
+      font-weight: 600;
+    }
+  </style>
 </head>
 <body>
-  Abriendo CSV...
+
+<header>
+  <h1>Tablero de Decisiones</h1>
+  <p class="subtitle" id="subtitle">Cargando...</p>
+</header>
+
+<div class="stats" id="stats"></div>
+
+<div class="filters">
+  <label>Canal:
+    <select id="filtroCanal"><option value="">Todos</option></select>
+  </label>
+  <label>Acción:
+    <select id="filtroAccion"><option value="">Todas</option></select>
+  </label>
+  <label>Producto:
+    <input type="text" id="filtroProducto" placeholder="Buscar producto..." style="width:180px"/>
+  </label>
+</div>
+
+<div class="table-wrap">
+  <div class="loading" id="loading">Cargando datos...</div>
+  <table id="tabla" style="display:none">
+    <thead>
+      <tr>
+        <th>Rank</th>
+        <th>Producto</th>
+        <th>Canal</th>
+        <th>Acción</th>
+        <th>Motivo</th>
+        <th style="text-align:right">Margen Neto %</th>
+        <th style="text-align:right">Cobertura Stock</th>
+        <th>Próximo Paso</th>
+      </tr>
+    </thead>
+    <tbody id="tbody"></tbody>
+  </table>
+</div>
+
+<script>
+  const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSBCn1MPQSL9AB-c0dD4oxxMPp6KFWhZ0POPViUhYDMRdpO9Lp83tvKv7KSS-cgP1NTjPr6VHlwSSV2/pub?output=csv&gid=1322538543';
+
+  const ORDEN_ACCIONES = ['PAUSAR','RIESGO_QUIEBRE','LIQUIDAR','AJUSTAR_PRECIO','EMPUJAR','OK'];
+
+  let allRows = [];
+
+  function parseCSV(text) {
+    const lines = text.trim().split('\n');
+    const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g,'').toLowerCase());
+    return lines.slice(1).map(line => {
+      const vals = line.match(/(".*?"|[^,]+|(?<=,)(?=,)|^(?=,)|(?<=,)$)/g) || [];
+      const obj = {};
+      headers.forEach((h, i) => {
+        obj[h] = (vals[i] || '').replace(/^"|"$/g,'').trim();
+      });
+      return obj;
+    });
+  }
+
+  function badgeClass(accion) {
+    const a = (accion || '').toUpperCase().replace(/\s/g,'_');
+    const map = { PAUSAR:'PAUSAR', LIQUIDAR:'LIQUIDAR', RIESGO_QUIEBRE:'RIESGO_QUIEBRE',
+                  EMPUJAR:'EMPUJAR', OK:'OK', AJUSTAR_PRECIO:'AJUSTAR_PRECIO' };
+    return 'badge badge-' + (map[a] || 'default');
+  }
+
+  function sortRows(rows) {
+    return [...rows].sort((a, b) => {
+      const ai = ORDEN_ACCIONES.indexOf((a.accion||'').toUpperCase());
+      const bi = ORDEN_ACCIONES.indexOf((b.accion||'').toUpperCase());
+      const an = ai === -1 ? 99 : ai;
+      const bn = bi === -1 ? 99 : bi;
+      if (an !== bn) return an - bn;
+      const am = parseFloat(a.margen_neto_pct || a.margen_neto || 0);
+      const bm = parseFloat(b.margen_neto_pct || b.margen_neto || 0);
+      return am - bm;
+    });
+  }
+
+  function render(rows) {
+    const tbody = document.getElementById('tbody');
+    tbody.innerHTML = '';
+    if (!rows.length) {
+      tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:40px;color:#8b949e">Sin resultados</td></tr>';
+      return;
+    }
+    rows.forEach((row, i) => {
+      const margen = row.margen_neto_pct || row.margen_neto_porcentaje || row.margen_neto || row['margen neto %'] || '';
+      const cobertura = row.cobertura_stock || row.cobertura_sem || row.cobertura || '';
+      const margenVal = parseFloat(margen);
+      const margenStr = isNaN(margenVal) ? (margen || '—') : (margenVal * (Math.abs(margenVal) < 2 ? 100 : 1)).toFixed(1) + '%';
+
+      const cobVal = parseFloat(cobertura);
+      const cobStr = isNaN(cobVal) ? (cobertura || '—') : cobVal.toFixed(1);
+
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td class="rank">${i+1}</td>
+        <td class="producto">${row.producto || '—'}</td>
+        <td class="canal">${row.canal_nombre || row.canal || '—'}</td>
+        <td><span class="${badgeClass(row.accion)}">${row.accion || '—'}</span></td>
+        <td class="motivo">${row.motivo || '—'}</td>
+        <td class="numero" style="color:${margenVal < 0 ? '#f85149' : '#3fb950'}">${margenStr}</td>
+        <td class="numero">${cobStr}</td>
+        <td class="proximo">${row.proximo_paso || row['próximo paso'] || row.proximo || '—'}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  function populateFilters(rows) {
+    const canales = [...new Set(rows.map(r => r.canal_nombre || r.canal).filter(Boolean))].sort();
+    const acciones = [...new Set(rows.map(r => r.accion).filter(Boolean))].sort((a,b) => {
+      return ORDEN_ACCIONES.indexOf(a) - ORDEN_ACCIONES.indexOf(b);
+    });
+    const selCanal = document.getElementById('filtroCanal');
+    canales.forEach(c => { const o = document.createElement('option'); o.value=c; o.textContent=c; selCanal.appendChild(o); });
+    const selAccion = document.getElementById('filtroAccion');
+    acciones.forEach(a => { const o = document.createElement('option'); o.value=a; o.textContent=a; selAccion.appendChild(o); });
+  }
+
+  function applyFilters() {
+    const canal = document.getElementById('filtroCanal').value;
+    const accion = document.getElementById('filtroAccion').value;
+    const prod = document.getElementById('filtroProducto').value.toLowerCase();
+    let filtered = allRows.filter(r => {
+      if (canal && (r.canal_nombre || r.canal) !== canal) return false;
+      if (accion && r.accion !== accion) return false;
+      if (prod && !(r.producto||'').toLowerCase().includes(prod)) return false;
+      return true;
+    });
+    render(sortRows(filtered));
+  }
+
+  function renderStats(rows) {
+    const counts = {};
+    rows.forEach(r => { counts[r.accion] = (counts[r.accion]||0)+1; });
+    const statsEl = document.getElementById('stats');
+    statsEl.innerHTML = ORDEN_ACCIONES
+      .filter(a => counts[a])
+      .map(a => `<div class="stat-pill">${a}: <span>${counts[a]}</span></div>`)
+      .join('');
+  }
+
+  async function load() {
+    try {
+      const res = await fetch(CSV_URL);
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const text = await res.text();
+      const rows = parseCSV(text);
+      allRows = rows;
+
+      const cliente = rows[0]?.cliente_nombre || 'Demo';
+      const semana = rows[0]?.semana_eval || '';
+      document.getElementById('subtitle').textContent = `${cliente} · ${semana} · ${rows.length} decisiones`;
+      document.title = `Tablero · ${cliente}`;
+
+      populateFilters(rows);
+      renderStats(rows);
+      render(sortRows(rows));
+
+      document.getElementById('loading').style.display = 'none';
+      document.getElementById('tabla').style.display = 'table';
+
+      ['filtroCanal','filtroAccion','filtroProducto'].forEach(id => {
+        document.getElementById(id).addEventListener('change', applyFilters);
+        document.getElementById(id).addEventListener('input', applyFilters);
+      });
+
+    } catch(e) {
+      document.getElementById('loading').innerHTML = `<div class="error">Error al cargar datos: ${e.message}<br><small>Verificá que el Sheet esté publicado como CSV</small></div>`;
+    }
+  }
+
+  load();
+</script>
 </body>
 </html>
