@@ -2,22 +2,88 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <title>Tablero decisiones</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tablero</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 24px;
+      background: #f7f7f7;
+    }
+    h1 {
+      margin-bottom: 16px;
+    }
+    .card {
+      background: white;
+      padding: 16px;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      overflow-x: auto;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      background: white;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 10px;
+      text-align: left;
+    }
+    th {
+      background: #f0f0f0;
+    }
+    .error {
+      color: red;
+      font-weight: bold;
+    }
+  </style>
 </head>
 <body>
-  <h1>Datos del CSV</h1>
-  <pre id="data">Cargando...</pre>
+  <h1>Tablero de decisiones</h1>
+  <div class="card">
+    <div id="estado">Cargando datos...</div>
+    <div id="tabla"></div>
+  </div>
 
   <script>
-    const csvUrl = "https://docs.google.com/spreadsheets/d/e/TU_URL/pub?gid=1322538543&single=true&output=csv";
+    const csvUrl = https://docs.google.com/spreadsheets/d/e/2PACX-1vSBCniMPQSL9AB-c0dD4oxxMPp6KFWhZ0POPViUhYDMRdpO9Lp83tvKv7KSS-cgP1NTjPr6VHlwSSV2/pubhtml?gid=1322538543&single=true;
+
+    function parseCSV(text) {
+      const rows = text.trim().split("\n").map(r => r.split(","));
+      return rows;
+    }
 
     fetch(csvUrl)
       .then(r => r.text())
       .then(texto => {
-        document.getElementById("data").textContent = texto;
+        const limpio = texto.trim().toLowerCase();
+
+        if (limpio.startsWith("<!doctype html") || limpio.startsWith("<html")) {
+          throw new Error("La URL no devuelve CSV real. Revisá publicación y permisos.");
+        }
+
+        const data = parseCSV(texto);
+        const headers = data[0];
+        const rows = data.slice(1);
+
+        let html = "<table><thead><tr>";
+        headers.forEach(h => html += `<th>${h}</th>`);
+        html += "</tr></thead><tbody>";
+
+        rows.forEach(row => {
+          html += "<tr>";
+          row.forEach(cell => html += `<td>${cell}</td>`);
+          html += "</tr>";
+        });
+
+        html += "</tbody></table>";
+
+        document.getElementById("estado").innerHTML = "";
+        document.getElementById("tabla").innerHTML = html;
       })
       .catch(err => {
-        document.getElementById("data").textContent = "Error al cargar CSV: " + err;
+        document.getElementById("estado").innerHTML = `<div class="error">${err.message}</div>`;
       });
   </script>
 </body>
