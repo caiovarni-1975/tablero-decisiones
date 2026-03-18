@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Tablero</title>
+  <title>Tablero de decisiones</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -41,29 +41,69 @@
 </head>
 <body>
   <h1>Tablero de decisiones</h1>
+
   <div class="card">
     <div id="estado">Cargando datos...</div>
     <div id="tabla"></div>
   </div>
 
   <script>
-    const csvUrl = https://docs.google.com/spreadsheets/d/e/2PACX-1vSBCniMPQSL9AB-c0dD4oxxMPp6KFWhZ0POPViUhYDMRdpO9Lp83tvKv7KSS-cgP1NTjPr6VHlwSSV2/pubhtml?gid=1322538543&single=true;
+    const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSBCniMPQSL9AB-c0dD4oxxMPp6KFWhZ0POPViUhYDMRdpO9Lp83tvKv7KSS-cgP1NTjPr6VHIwSSV2/pub?gid=1322538543&single=true&output=csv";
 
     function parseCSV(text) {
-      const rows = text.trim().split("\n").map(r => r.split(","));
+      const rows = [];
+      let row = [];
+      let cell = "";
+      let inQuotes = false;
+
+      for (let i = 0; i < text.length; i++) {
+        const char = text[i];
+        const nextChar = text[i + 1];
+
+        if (char === '"') {
+          if (inQuotes && nextChar === '"') {
+            cell += '"';
+            i++;
+          } else {
+            inQuotes = !inQuotes;
+          }
+        } else if (char === ',' && !inQuotes) {
+          row.push(cell);
+          cell = "";
+        } else if ((char === '\n' || char === '\r') && !inQuotes) {
+          if (char === '\r' && nextChar === '\n') i++;
+          row.push(cell);
+          if (row.some(c => c !== "")) rows.push(row);
+          row = [];
+          cell = "";
+        } else {
+          cell += char;
+        }
+      }
+
+      if (cell.length > 0 || row.length > 0) {
+        row.push(cell);
+        rows.push(row);
+      }
+
       return rows;
     }
 
     fetch(csvUrl)
-      .then(r => r.text())
+      .then(response => response.text())
       .then(texto => {
         const limpio = texto.trim().toLowerCase();
 
         if (limpio.startsWith("<!doctype html") || limpio.startsWith("<html")) {
-          throw new Error("La URL no devuelve CSV real. Revisá publicación y permisos.");
+          throw new Error("La URL no devolvió CSV real.");
         }
 
         const data = parseCSV(texto);
+
+        if (!data.length) {
+          throw new Error("El CSV está vacío.");
+        }
+
         const headers = data[0];
         const rows = data.slice(1);
 
@@ -73,7 +113,9 @@
 
         rows.forEach(row => {
           html += "<tr>";
-          row.forEach(cell => html += `<td>${cell}</td>`);
+          headers.forEach((_, i) => {
+            html += `<td>${row[i] ?? ""}</td>`;
+          });
           html += "</tr>";
         });
 
