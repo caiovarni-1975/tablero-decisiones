@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Motor MVP — Configuración</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#0a0a0f; --surface:#13131a; --surface2:#1c1c26; --border:#2a2a38;
+    --text:#e8e8f0; --text-muted:#6b6b80; --text-dim:#3a3a50; --accent:#6366f1;
+    --success:#86efac; --danger:#fca5a5;
+  }
+  body.light {
+    --bg:#f4f4f8; --surface:#ffffff; --surface2:#f0f0f5; --border:#dddde8;
+    --text:#1a1a2e; --text-muted:#6b6b80; --text-dim:#aaaabc;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;min-height:100vh;transition:background .2s,color .2s;}
+
+  .header{padding:16px 28px;border-bottom:1px solid var(--border);background:var(--surface);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;}
+  .brand{display:flex;align-items:center;gap:10px;}
+  .brand-dot{width:8px;height:8px;background:var(--success);border-radius:50%;}
+  .brand-name{font-size:12px;font-weight:500;color:var(--text-muted);letter-spacing:.08em;text-transform:uppercase;}
+  .header-actions{display:flex;align-items:center;gap:8px;}
+
+  .btn{padding:7px 14px;border-radius:6px;font-size:13px;font-weight:500;font-family:'DM Sans',sans-serif;cursor:pointer;border:1px solid;transition:all .15s;display:inline-flex;align-items:center;gap:6px;}
+  .btn-primary{background:var(--accent);border-color:var(--accent);color:#fff;}
+  .btn-primary:hover{opacity:.85;}
+  .btn-secondary{background:var(--surface2);border-color:var(--border);color:var(--text);}
+  .btn-secondary:hover{border-color:var(--accent);}
+  .btn-success{background:#14532d;border-color:#14532d;color:var(--success);}
+  .btn-success:hover{opacity:.85;}
+  .btn-danger-sm{background:transparent;border:1px solid var(--border);border-radius:4px;color:var(--text-muted);width:26px;height:26px;cursor:pointer;font-size:13px;display:inline-flex;align-items:center;justify-content:center;transition:all .15s;}
+  .btn-danger-sm:hover{border-color:#7f1d1d;color:var(--danger);background:#2d0f0f;}
+  .btn-sm{padding:5px 10px;font-size:12px;}
+  .btn:disabled{opacity:.4;cursor:not-allowed;}
+  .theme-btn{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:5px 9px;cursor:pointer;font-size:15px;transition:all .15s;}
+  .theme-btn:hover{border-color:var(--accent);}
+
+  .main{max-width:800px;margin:0 auto;padding:24px 28px;}
+  .section{margin-bottom:24px;}
+  .section-title{font-size:15px;font-weight:600;margin-bottom:3px;letter-spacing:-.01em;}
+  .section-sub{font-size:12px;color:var(--text-muted);margin-bottom:14px;}
+
+  .form-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:18px;}
+  .form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;}
+  .form-row.triple{grid-template-columns:1fr 1fr 1fr;}
+  .form-row:last-child{margin-bottom:0;}
+  .form-group{display:flex;flex-direction:column;gap:4px;}
+  .form-label{font-size:10px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;}
+  .form-input{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:7px 11px;color:var(--text);font-size:13px;font-family:'DM Sans',sans-serif;outline:none;transition:border-color .15s;}
+  .form-input:focus{border-color:var(--accent);}
+  .form-input::placeholder{color:var(--text-dim);}
+  .form-select{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:7px 11px;color:var(--text);font-size:13px;font-family:'DM Sans',sans-serif;outline:none;cursor:pointer;}
+  .form-hint{font-size:10px;color:var(--text-dim);}
+
+  .canal-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;margin-bottom:10px;overflow:hidden;transition:border-color .15s;}
+  .canal-card.inactive{opacity:.5;}
+  .canal-head{padding:12px 16px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border);}
+  .toggle{position:relative;width:34px;height:18px;flex-shrink:0;}
+  .toggle input{opacity:0;width:0;height:0;position:absolute;}
+  .toggle-track{position:absolute;inset:0;background:var(--surface2);border:1px solid var(--border);border-radius:9px;transition:.2s;cursor:pointer;}
+  .toggle input:checked+.toggle-track{background:var(--accent);border-color:var(--accent);}
+  .toggle-thumb{position:absolute;top:2px;left:2px;width:12px;height:12px;background:#fff;border-radius:50%;transition:.2s;pointer-events:none;}
+  .toggle input:checked~.toggle-thumb{left:18px;}
+  .canal-name-inp{flex:1;font-size:13px;font-weight:600;background:transparent;border:none;color:var(--text);font-family:'DM Sans',sans-serif;outline:none;}
+  .canal-body{padding:14px 16px;}
+
+  .gastos-title{font-size:10px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;margin:12px 0 6px;}
+  .gasto-cols{display:grid;grid-template-columns:1fr 150px 90px 28px;gap:6px;margin-bottom:4px;}
+  .gasto-col-lbl{font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.05em;font-weight:600;}
+  .gasto-row{display:grid;grid-template-columns:1fr 150px 90px 28px;gap:6px;align-items:center;margin-bottom:6px;}
+
+  .divider{border:none;border-top:1px solid var(--border);margin:20px 0;}
+  .run-section{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;}
+  .run-title{font-size:14px;font-weight:600;margin-bottom:2px;}
+  .run-sub{font-size:12px;color:var(--text-muted);}
+
+  .toast{position:fixed;bottom:20px;right:20px;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:11px 16px;font-size:13px;box-shadow:0 8px 32px rgba(0,0,0,.4);z-index:200;display:none;max-width:300px;}
+  .toast.success{border-color:#14532d;color:var(--success);}
+  .toast.error{border-color:#7f1d1d;color:var(--danger);}
+  .toast.show{display:block;animation:fadeIn .2s ease;}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+  .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:100;align-items:center;justify-content:center;backdrop-filter:blur(3px);}
+  .overlay.show{display:flex;}
+  .overlay-box{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:24px 32px;text-align:center;}
+  .spinner{width:28px;height:28px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 12px;}
+  .overlay-txt{font-size:13px;color:var(--text-muted);}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  @media(max-width:600px){
+    .main{padding:14px;}
+    .form-row,.form-row.triple{grid-template-columns:1fr;}
+    .gasto-row,.gasto-cols{grid-template-columns:1fr 1fr;}
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="brand">
+    <div class="brand-dot"></div>
+    <span class="brand-name">Motor MVP — Configuración</span>
+  </div>
+  <div class="header-actions">
+    <button class="theme-btn" onclick="toggleTheme()">☀️</button>
+    <button class="btn btn-secondary btn-sm" onclick="loadConfig()">↺ Recargar</button>
+    <button class="btn btn-success" onclick="saveAll()">Guardar</button>
+  </div>
+</div>
+
+<div class="main">
+
+  <div class="section">
+    <div class="section-title">Datos del cliente</div>
+    <div class="section-sub">Configuración global que aplica a todos los canales</div>
+    <div class="form-card">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Nombre del cliente</label>
+          <input class="form-input" id="cliente_nombre" type="text" placeholder="Ej: Marca ABC">
+        </div>
+        <div class="form-group">
+          <label class="form-label">ID cliente</label>
+          <input class="form-input" id="cliente_id" type="text" placeholder="Ej: CLI_01">
+          <span class="form-hint">Sin espacios ni caracteres especiales</span>
+        </div>
+      </div>
+      <div class="form-row triple">
+        <div class="form-group">
+          <label class="form-label">Objetivo margen global (%)</label>
+          <input class="form-input" id="objetivo_margen_global_pct" type="number" placeholder="20" min="0" max="100">
+          <span class="form-hint">Se usa cuando no hay objetivo por canal</span>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Moneda</label>
+          <select class="form-select" id="moneda">
+            <option value="ARS">ARS — Pesos argentinos</option>
+            <option value="USD">USD — Dólares</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Inicio de semana</label>
+          <select class="form-select" id="semana_inicio_dia">
+            <option value="LUNES">Lunes</option>
+            <option value="DOMINGO">Domingo</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Canales activos</div>
+    <div class="section-sub">Activá o desactivá canales. Configurá margen objetivo y gastos por canal.</div>
+    <div id="canalesContainer"><div style="padding:16px;color:var(--text-muted);font-size:13px;">Cargando...</div></div>
+    <button class="btn btn-secondary btn-sm" onclick="addCanal()" style="margin-top:8px">+ Agregar canal</button>
+  </div>
+
+  <hr class="divider">
+  <div class="run-section">
+    <div>
+      <div class="run-title">Ejecutar motor</div>
+      <div class="run-sub">Guarda la configuración y recalcula todas las decisiones</div>
+    </div>
+    <button class="btn btn-primary" onclick="saveAndRun()">▶ Guardar y ejecutar motor</button>
+  </div>
+
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="overlay-box">
+    <div class="spinner"></div>
+    <div class="overlay-txt" id="overlayTxt">Procesando...</div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+let isDark = true;
+let canalesCount = 0;
+const MODOS = ['PCT_SOBRE_VENTA','FIJO_POR_UNIDAD','FIJO_POR_ORDEN','MANUAL'];
+const TIPOS_CANAL = ['MARKETPLACE','E_COMMERCE','FISICO','MAYORISTA','OTRO'];
+
+// ── Theme ────────────────────────────────────────────────
+function toggleTheme(){
+  isDark = !isDark;
+  document.body.classList.toggle('light', !isDark);
+  document.querySelector('.theme-btn').textContent = isDark ? '☀️' : '🌙';
+}
+
+// ── Load config via google.script.run ────────────────────
+function loadConfig(){
+  showOverlay('Cargando configuración...');
+  google.script.run
+    .withSuccessHandler(data => {
+      hideOverlay();
+      if (data.error) { toast(data.error, 'error'); return; }
+      populateForm(data);
+      toast('Configuración cargada.', 'success');
+    })
+    .withFailureHandler(err => {
+      hideOverlay();
+      toast('Error: ' + err.message, 'error');
+    })
+    .getConfigServer();
+}
+
+function populateForm(data){
+  const c = (data.clientes||[])[0] || {};
+  setVal('cliente_id',               c.cliente_id||'CLI_01');
+  setVal('cliente_nombre',           c.cliente_nombre||'');
+  setVal('objetivo_margen_global_pct', c.objetivo_margen_global_pct||20);
+  setVal('moneda',                   c.moneda||'ARS');
+  setVal('semana_inicio_dia',        c.semana_inicio_dia||'LUNES');
+
+  document.getElementById('canalesContainer').innerHTML = '';
+  canalesCount = 0;
+
+  const canales = data.canales||[];
+  if (canales.length) {
+    canales.forEach(canal => {
+      const cc = (data.clienteCanales||[]).find(x=>x.canal_id===canal.canal_id)||{};
+      const gastos = (data.gastos||[]).filter(g=>g.canal_id===canal.canal_id);
+      addCanalFromData(canal, cc, gastos);
+    });
+  } else {
+    addCanalFromData(
+      {canal_id:'CAN_ML',canal_nombre:'Mercado Libre',tipo_canal:'MARKETPLACE',activo_global:'ACTIVO'},
+      {activo_cliente:'ACTIVO',objetivo_margen_canal_pct:25},
+      [{nombre_gasto:'Comisión ML',modo_calculo:'PCT_SOBRE_VENTA',valor:13}]
+    );
+    addCanalFromData(
+      {canal_id:'CAN_TN',canal_nombre:'Tienda Nube',tipo_canal:'E_COMMERCE',activo_global:'ACTIVO'},
+      {activo_cliente:'ACTIVO',objetivo_margen_canal_pct:20},
+      [{nombre_gasto:'Comisión TN',modo_calculo:'PCT_SOBRE_VENTA',valor:2}]
+    );
+    addCanalFromData(
+      {canal_id:'CAN_LOCAL',canal_nombre:'Local Físico',tipo_canal:'FISICO',activo_global:'ACTIVO'},
+      {activo_cliente:'ACTIVO',objetivo_margen_canal_pct:18},
+      [{nombre_gasto:'Alquiler',modo_calculo:'MANUAL',valor:8000}]
+    );
+  }
+}
+
+// ── Canal rendering ──────────────────────────────────────
+function addCanal(){
+  addCanalFromData(
+    {canal_id:'CAN_'+Date.now(),canal_nombre:'Nuevo canal',tipo_canal:'OTRO',activo_global:'ACTIVO'},
+    {activo_cliente:'ACTIVO',objetivo_margen_canal_pct:20},[]
+  );
+}
+
+function addCanalFromData(canal, cc, gastos){
+  const id = 'c'+canalesCount++;
+  const activo = (cc.activo_cliente||canal.activo_global||'ACTIVO')==='ACTIVO';
+  const div = document.createElement('div');
+  div.className = 'canal-card'+(activo?'':' inactive');
+  div.id = id;
+  div.innerHTML = `
+    <div class="canal-head">
+      <label class="toggle">
+        <input type="checkbox" ${activo?'checked':''} onchange="toggleCanal('${id}',this.checked)">
+        <div class="toggle-track"></div>
+        <div class="toggle-thumb"></div>
+      </label>
+      <input class="canal-name-inp" type="text" value="${canal.canal_nombre||''}" data-c="${id}" data-f="canal_nombre">
+      <select class="form-select" style="width:130px;font-size:12px" data-c="${id}" data-f="tipo_canal">
+        ${TIPOS_CANAL.map(t=>`<option value="${t}" ${canal.tipo_canal===t?'selected':''}>${t}</option>`).join('')}
+      </select>
+      <button class="btn-danger-sm" onclick="removeCanal('${id}')" style="margin-left:6px">✕</button>
+    </div>
+    <div class="canal-body" id="body_${id}" ${activo?'':'style="display:none"'}>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">ID Canal</label>
+          <input class="form-input" type="text" value="${canal.canal_id||''}" data-c="${id}" data-f="canal_id" placeholder="CAN_ML">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Objetivo margen canal (%)</label>
+          <input class="form-input" type="number" value="${cc.objetivo_margen_canal_pct||''}" data-c="${id}" data-f="obj_margen" placeholder="20">
+          <span class="form-hint">Vacío = usa objetivo global</span>
+        </div>
+      </div>
+      <div class="gastos-title">Gastos del canal</div>
+      <div class="gasto-cols">
+        <span class="gasto-col-lbl">Nombre</span>
+        <span class="gasto-col-lbl">Modo cálculo</span>
+        <span class="gasto-col-lbl">Valor</span>
+        <span></span>
+      </div>
+      <div id="g_${id}">
+        ${gastos.map((g,i)=>gastoRow(id,i,g)).join('')}
+      </div>
+      <button class="btn btn-secondary btn-sm" onclick="addGasto('${id}')" style="margin-top:6px">+ Gasto</button>
+    </div>`;
+  document.getElementById('canalesContainer').appendChild(div);
+}
+
+function gastoRow(cid, idx, g){
+  const key = cid+'_'+idx;
+  return `<div class="gasto-row" id="gr_${key}">
+    <input class="form-input" type="text" value="${g.nombre_gasto||''}" placeholder="Nombre" data-g="${key}" data-f="nombre_gasto">
+    <select class="form-select" data-g="${key}" data-f="modo_calculo">
+      ${MODOS.map(m=>`<option value="${m}" ${g.modo_calculo===m?'selected':''}>${m}</option>`).join('')}
+    </select>
+    <input class="form-input" type="number" value="${g.valor||''}" placeholder="Valor" data-g="${key}" data-f="valor">
+    <button class="btn-danger-sm" onclick="removeGasto('gr_${key}')">✕</button>
+  </div>`;
+}
+
+function addGasto(cid){
+  const cont = document.getElementById('g_'+cid);
+  const idx = cont.children.length;
+  const div = document.createElement('div');
+  div.innerHTML = gastoRow(cid, idx, {});
+  cont.appendChild(div.firstElementChild);
+}
+
+function removeGasto(id){ const el=document.getElementById(id); if(el) el.remove(); }
+function removeCanal(id){ const el=document.getElementById(id); if(el) el.remove(); }
+function toggleCanal(id, active){
+  document.getElementById(id).classList.toggle('inactive',!active);
+  const body = document.getElementById('body_'+id);
+  body.style.display = active?'':'none';
+}
+
+// ── Collect ──────────────────────────────────────────────
+function collectData(){
+  const clienteId = getVal('cliente_id');
+  const cliente = {
+    cliente_id: clienteId,
+    cliente_nombre: getVal('cliente_nombre'),
+    moneda: getVal('moneda'),
+    timezone: 'America/Argentina/Buenos_Aires',
+    semana_inicio_dia: getVal('semana_inicio_dia'),
+    objetivo_margen_global_pct: parseFloat(getVal('objetivo_margen_global_pct'))||20,
+    activo: 'ACTIVO',
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString()
+  };
+
+  const canales = [];
+  document.querySelectorAll('.canal-card').forEach(card => {
+    const cid = card.id;
+    const activo = card.querySelector('input[type=checkbox]').checked;
+    const canalId = card.querySelector('[data-f="canal_id"]')?.value||cid;
+    const nombre  = card.querySelector('[data-f="canal_nombre"]')?.value||'';
+    const tipo    = card.querySelector('[data-f="tipo_canal"]')?.value||'OTRO';
+    const objM    = parseFloat(card.querySelector('[data-f="obj_margen"]')?.value)||null;
+
+    const gastosMap = {};
+    card.querySelectorAll('[data-g]').forEach(el => {
+      const k=el.dataset.g, f=el.dataset.f;
+      if(!gastosMap[k]) gastosMap[k]={};
+      gastosMap[k][f]=el.value;
+    });
+
+    const gastos = Object.values(gastosMap).filter(g=>g.nombre_gasto).map((g,i)=>({
+      gasto_id: 'G_'+canalId+'_'+(i+1),
+      cliente_id: clienteId,
+      canal_id: canalId,
+      nombre_gasto: g.nombre_gasto||'',
+      tipo_gasto: 'COMISION',
+      modo_calculo: g.modo_calculo||'PCT_SOBRE_VENTA',
+      valor: parseFloat(g.valor)||0,
+      moneda: getVal('moneda'),
+      aplica_si_cuotas: 'NO',
+      origen: 'MANUAL',
+      vigente_desde: '2025-01-01',
+      vigente_hasta: '2030-12-31',
+      fecha_revision: new Date().toISOString().split('T')[0],
+      activo: 'ACTIVO',
+      notas: ''
+    }));
+
+    canales.push({
+      canal_id: canalId,
+      canal_nombre: nombre,
+      tipo_canal: tipo,
+      descripcion: '',
+      activo_global: activo?'ACTIVO':'INACTIVO',
+      cc: {
+        cliente_canal_id: 'CC_'+clienteId+'_'+canalId,
+        cliente_id: clienteId,
+        canal_id: canalId,
+        activo_cliente: activo?'ACTIVO':'INACTIVO',
+        prioridad_canal: 1,
+        objetivo_margen_canal_pct: objM||'',
+        notas: '',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      },
+      gastos
+    });
+  });
+
+  return { cliente, canales };
+}
+
+// ── Save ─────────────────────────────────────────────────
+function saveAll(){
+  showOverlay('Guardando configuración...');
+  google.script.run
+    .withSuccessHandler(res => {
+      hideOverlay();
+      if(res.error){ toast(res.error,'error'); return; }
+      toast('✓ '+res.message,'success');
+    })
+    .withFailureHandler(err => { hideOverlay(); toast('Error: '+err.message,'error'); })
+    .saveConfigServer(collectData());
+}
+
+function saveAndRun(){
+  showOverlay('Guardando configuración...');
+  google.script.run
+    .withSuccessHandler(res => {
+      if(res.error){ hideOverlay(); toast(res.error,'error'); return; }
+      showOverlay('Ejecutando motor...');
+      google.script.run
+        .withSuccessHandler(r2 => {
+          hideOverlay();
+          if(r2.error){ toast(r2.error,'error'); return; }
+          toast('✓ Motor ejecutado. Output actualizado.','success');
+        })
+        .withFailureHandler(err => { hideOverlay(); toast('Error motor: '+err.message,'error'); })
+        .runMotorServer();
+    })
+    .withFailureHandler(err => { hideOverlay(); toast('Error: '+err.message,'error'); })
+    .saveConfigServer(collectData());
+}
+
+// ── Helpers ──────────────────────────────────────────────
+function getVal(id){ return document.getElementById(id)?.value||''; }
+function setVal(id,v){ const el=document.getElementById(id); if(el) el.value=v; }
+function showOverlay(t){ document.getElementById('overlayTxt').textContent=t; document.getElementById('overlay').classList.add('show'); }
+function hideOverlay(){ document.getElementById('overlay').classList.remove('show'); }
+function toast(msg, type='success'){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.className='toast '+type+' show';
+  setTimeout(()=>t.classList.remove('show'),3500);
+}
+
+// ── Init ─────────────────────────────────────────────────
+loadConfig();
+</script>
+</body>
+</html>
