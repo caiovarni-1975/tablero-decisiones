@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Configuración — Motor MVP</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #13131a;
+    --surface2: #1c1c26;
+    --border: #2a2a38;
+    --text: #e8e8f0;
+    --text-muted: #6b6b80;
+    --text-dim: #3a3a50;
+    --accent: #6366f1;
+    --success: #86efac;
+    --danger: #fca5a5;
+  }
+
+  body.light {
+    --bg: #f4f4f8;
+    --surface: #ffffff;
+    --surface2: #f0f0f5;
+    --border: #dddde8;
+    --text: #1a1a2e;
+    --text-muted: #6b6b80;
+    --text-dim: #aaaabc;
+    --accent: #6366f1;
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--bg); color:var(--text); font-family:'DM Sans',sans-serif; font-size:14px; min-height:100vh; transition:background .2s,color .2s; }
+
+  /* Header */
+  .header { padding:18px 32px; border-bottom:1px solid var(--border); background:var(--surface); display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:50; }
+  .brand { display:flex; align-items:center; gap:10px; }
+  .brand-dot { width:8px; height:8px; background:var(--success); border-radius:50%; }
+  .brand-name { font-size:13px; font-weight:500; color:var(--text-muted); letter-spacing:.08em; text-transform:uppercase; }
+  .header-actions { display:flex; align-items:center; gap:10px; }
+
+  /* Buttons */
+  .btn { padding:8px 16px; border-radius:6px; font-size:13px; font-weight:500; font-family:'DM Sans',sans-serif; cursor:pointer; border:1px solid; transition:all .15s; display:inline-flex; align-items:center; gap:6px; }
+  .btn-primary { background:var(--accent); border-color:var(--accent); color:#fff; }
+  .btn-primary:hover { opacity:.85; }
+  .btn-secondary { background:var(--surface2); border-color:var(--border); color:var(--text); }
+  .btn-secondary:hover { border-color:var(--accent); }
+  .btn-danger { background:transparent; border-color:#7f1d1d; color:var(--danger); }
+  .btn-danger:hover { background:#2d0f0f; }
+  .btn-success { background:#14532d; border-color:#14532d; color:var(--success); }
+  .btn-success:hover { opacity:.85; }
+  .btn-sm { padding:5px 10px; font-size:12px; }
+  .btn:disabled { opacity:.4; cursor:not-allowed; }
+
+  /* Theme toggle */
+  .theme-toggle { background:var(--surface2); border:1px solid var(--border); border-radius:6px; padding:6px 10px; cursor:pointer; font-size:16px; color:var(--text-muted); transition:all .15s; }
+  .theme-toggle:hover { border-color:var(--accent); }
+
+  /* Layout */
+  .main { max-width:860px; margin:0 auto; padding:28px 32px; }
+  .section { margin-bottom:28px; }
+  .section-title { font-size:16px; font-weight:600; margin-bottom:4px; letter-spacing:-.01em; }
+  .section-subtitle { font-size:13px; color:var(--text-muted); margin-bottom:16px; }
+
+  /* Form card */
+  .form-card { background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:20px; }
+  .form-row { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:14px; }
+  .form-row.single { grid-template-columns:1fr; }
+  .form-row.triple { grid-template-columns:1fr 1fr 1fr; }
+  .form-group { display:flex; flex-direction:column; gap:5px; }
+  .form-label { font-size:11px; font-weight:600; color:var(--text-muted); text-transform:uppercase; letter-spacing:.06em; }
+  .form-input { background:var(--surface2); border:1px solid var(--border); border-radius:6px; padding:8px 12px; color:var(--text); font-size:13px; font-family:'DM Sans',sans-serif; outline:none; transition:border-color .15s; }
+  .form-input:focus { border-color:var(--accent); }
+  .form-input::placeholder { color:var(--text-dim); }
+  .form-select { background:var(--surface2); border:1px solid var(--border); border-radius:6px; padding:8px 12px; color:var(--text); font-size:13px; font-family:'DM Sans',sans-serif; outline:none; cursor:pointer; }
+  .form-hint { font-size:11px; color:var(--text-dim); margin-top:2px; }
+
+  /* Canal card */
+  .canal-card { background:var(--surface); border:1px solid var(--border); border-radius:8px; margin-bottom:12px; overflow:hidden; transition:border-color .15s; }
+  .canal-card.inactive { opacity:.55; }
+  .canal-header { padding:14px 18px; display:flex; align-items:center; gap:12px; border-bottom:1px solid var(--border); cursor:pointer; }
+  .canal-toggle { position:relative; width:36px; height:20px; flex-shrink:0; }
+  .canal-toggle input { opacity:0; width:0; height:0; }
+  .canal-toggle-track { position:absolute; inset:0; background:var(--surface2); border:1px solid var(--border); border-radius:10px; transition:.2s; cursor:pointer; }
+  .canal-toggle input:checked + .canal-toggle-track { background:var(--accent); border-color:var(--accent); }
+  .canal-toggle-thumb { position:absolute; top:2px; left:2px; width:14px; height:14px; background:#fff; border-radius:50%; transition:.2s; pointer-events:none; }
+  .canal-toggle input:checked ~ .canal-toggle-thumb { left:18px; }
+  .canal-name-input { flex:1; font-size:14px; font-weight:600; background:transparent; border:none; color:var(--text); font-family:'DM Sans',sans-serif; outline:none; }
+  .canal-body { padding:16px 18px; }
+
+  /* Gastos */
+  .gastos-list { margin-top:12px; }
+  .gastos-title { font-size:11px; font-weight:600; color:var(--text-muted); text-transform:uppercase; letter-spacing:.06em; margin-bottom:8px; }
+  .gasto-row { display:grid; grid-template-columns:1fr 140px 100px auto; gap:8px; align-items:center; margin-bottom:8px; }
+  .gasto-row-header { display:grid; grid-template-columns:1fr 140px 100px auto; gap:8px; margin-bottom:6px; }
+  .gasto-col-label { font-size:10px; font-weight:600; color:var(--text-dim); text-transform:uppercase; letter-spacing:.06em; }
+  .btn-remove { background:transparent; border:1px solid var(--border); border-radius:4px; color:var(--text-muted); width:28px; height:28px; cursor:pointer; font-size:14px; display:flex; align-items:center; justify-content:center; transition:all .15s; }
+  .btn-remove:hover { border-color:#7f1d1d; color:var(--danger); background:#2d0f0f; }
+
+  /* Divider */
+  .divider { border:none; border-top:1px solid var(--border); margin:20px 0; }
+
+  /* Toast */
+  .toast { position:fixed; bottom:24px; right:24px; background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:12px 18px; font-size:13px; box-shadow:0 8px 32px rgba(0,0,0,.4); z-index:200; display:none; animation:slideUp .2s ease; max-width:320px; }
+  .toast.success { border-color:#14532d; color:var(--success); }
+  .toast.error   { border-color:#7f1d1d; color:var(--danger); }
+  .toast.visible { display:block; }
+  @keyframes slideUp { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+
+  /* Loading overlay */
+  .overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.6); z-index:100; align-items:center; justify-content:center; backdrop-filter:blur(4px); }
+  .overlay.visible { display:flex; }
+  .overlay-box { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:28px 36px; text-align:center; }
+  .overlay-spinner { width:32px; height:32px; border:3px solid var(--border); border-top-color:var(--accent); border-radius:50%; animation:spin .7s linear infinite; margin:0 auto 14px; }
+  @keyframes spin { to{transform:rotate(360deg)} }
+  .overlay-text { font-size:14px; color:var(--text-muted); }
+
+  /* Webapp URL setup */
+  .setup-banner { background:var(--surface2); border:1px solid var(--border); border-radius:8px; padding:16px 18px; margin-bottom:24px; display:flex; align-items:flex-start; gap:12px; }
+  .setup-icon { font-size:20px; flex-shrink:0; margin-top:1px; }
+  .setup-text { flex:1; }
+  .setup-title { font-size:13px; font-weight:600; margin-bottom:4px; }
+  .setup-desc { font-size:12px; color:var(--text-muted); line-height:1.5; }
+  .setup-input-row { display:flex; gap:8px; margin-top:10px; }
+  .setup-input { flex:1; background:var(--bg); border:1px solid var(--border); border-radius:6px; padding:7px 12px; color:var(--text); font-size:12px; font-family:'DM Mono',monospace; outline:none; }
+  .setup-input:focus { border-color:var(--accent); }
+
+  @media(max-width:600px) {
+    .main { padding:16px; }
+    .form-row { grid-template-columns:1fr; }
+    .form-row.triple { grid-template-columns:1fr; }
+    .gasto-row { grid-template-columns:1fr 1fr; }
+    .gasto-row > *:nth-child(3) { grid-column:1; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="brand">
+    <div class="brand-dot"></div>
+    <span class="brand-name">Motor MVP — Configuración</span>
+  </div>
+  <div class="header-actions">
+    <button class="theme-toggle" onclick="toggleTheme()" title="Cambiar tema">☀️</button>
+    <button class="btn btn-secondary btn-sm" onclick="loadConfig()">↺ Recargar</button>
+    <button class="btn btn-success" onclick="saveAll()" id="btnSave">Guardar configuración</button>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- Setup banner -->
+  <div class="setup-banner" id="setupBanner">
+    <div class="setup-icon">⚙️</div>
+    <div class="setup-text">
+      <div class="setup-title">Conectar con Google Sheets</div>
+      <div class="setup-desc">Pegá la URL del Web App de Apps Script para que esta interfaz pueda leer y escribir en tu Sheets. La encontrás en Apps Script → Implementar → Administrar implementaciones.</div>
+      <div class="setup-input-row">
+        <input class="setup-input" type="text" id="webappUrl" placeholder="https://script.google.com/macros/s/.../exec">
+        <button class="btn btn-primary btn-sm" onclick="connectWebApp()">Conectar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sección: Datos del cliente -->
+  <div class="section">
+    <div class="section-title">Datos del cliente</div>
+    <div class="section-subtitle">Configuración global que aplica a todos los canales</div>
+    <div class="form-card">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Nombre del cliente</label>
+          <input class="form-input" type="text" id="cliente_nombre" placeholder="Ej: Marca Ropa Caballero">
+        </div>
+        <div class="form-group">
+          <label class="form-label">ID cliente</label>
+          <input class="form-input" type="text" id="cliente_id" placeholder="Ej: CLI_01">
+          <span class="form-hint">Sin espacios ni caracteres especiales</span>
+        </div>
+      </div>
+      <div class="form-row triple">
+        <div class="form-group">
+          <label class="form-label">Objetivo margen global (%)</label>
+          <input class="form-input" type="number" id="objetivo_margen_global_pct" placeholder="20" min="0" max="100">
+          <span class="form-hint">El motor usa esto cuando no hay objetivo por canal</span>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Moneda</label>
+          <select class="form-select" id="moneda">
+            <option value="ARS">ARS — Pesos argentinos</option>
+            <option value="USD">USD — Dólares</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Inicio semana</label>
+          <select class="form-select" id="semana_inicio_dia">
+            <option value="LUNES">Lunes</option>
+            <option value="DOMINGO">Domingo</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sección: Canales -->
+  <div class="section">
+    <div class="section-title">Canales activos</div>
+    <div class="section-subtitle">Activá o desactivá canales. Configurá margen objetivo y gastos por canal.</div>
+    <div id="canalesContainer">
+      <div style="padding:20px;text-align:center;color:var(--text-muted);font-size:13px;">Cargando canales...</div>
+    </div>
+    <button class="btn btn-secondary btn-sm" onclick="addCanal()" style="margin-top:8px">+ Agregar canal</button>
+  </div>
+
+  <!-- Botón ejecutar motor -->
+  <hr class="divider">
+  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+    <div>
+      <div style="font-size:14px;font-weight:600;margin-bottom:3px">Ejecutar motor</div>
+      <div style="font-size:12px;color:var(--text-muted)">Guarda la configuración y recalcula todas las decisiones</div>
+    </div>
+    <button class="btn btn-primary" onclick="saveAndRun()">▶ Guardar y ejecutar motor</button>
+  </div>
+
+</div>
+
+<!-- Loading overlay -->
+<div class="overlay" id="loadingOverlay">
+  <div class="overlay-box">
+    <div class="overlay-spinner"></div>
+    <div class="overlay-text" id="overlayText">Guardando...</div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+let WEBAPP_URL = localStorage.getItem('mvp_webapp_url') || '';
+let canalesData = [];
+let canalesCounter = 0;
+
+const TIPOS_GASTO = ['COMISION','IMPUESTO','RETENCION','PASARELA','CUOTAS','PLATAFORMA','MANUAL','OTRO'];
+const MODOS_CALCULO = ['PCT_SOBRE_VENTA','FIJO_POR_UNIDAD','FIJO_POR_ORDEN','MANUAL'];
+const TIPOS_CANAL = ['MARKETPLACE','E_COMMERCE','FISICO','MAYORISTA','OTRO'];
+
+// ── Theme ────────────────────────────────────────────────
+let isDark = localStorage.getItem('mvp_theme') !== 'light';
+function toggleTheme() {
+  isDark = !isDark;
+  document.body.classList.toggle('light', !isDark);
+  localStorage.setItem('mvp_theme', isDark?'dark':'light');
+  document.querySelector('.theme-toggle').textContent = isDark ? '☀️' : '🌙';
+}
+if (!isDark) { document.body.classList.add('light'); document.querySelector('.theme-toggle') && (document.querySelector('.theme-toggle').textContent = '🌙'); }
+
+// ── Webapp connection ────────────────────────────────────
+function connectWebApp() {
+  const url = document.getElementById('webappUrl').value.trim();
+  if (!url.startsWith('https://script.google.com')) {
+    showToast('URL inválida. Debe ser una URL de Apps Script.', 'error'); return;
+  }
+  WEBAPP_URL = url;
+  localStorage.setItem('mvp_webapp_url', url);
+  document.getElementById('setupBanner').style.display = 'none';
+  showToast('Conectado. Cargando configuración...', 'success');
+  loadConfig();
+}
+
+// ── API calls ────────────────────────────────────────────
+async function callWebApp(action, payload) {
+  if (!WEBAPP_URL) { showToast('Primero conectá el Web App.', 'error'); return null; }
+  const res = await fetch(WEBAPP_URL, {
+    method: 'POST',
+    body: JSON.stringify({ action, payload }),
+    headers: { 'Content-Type': 'application/json' }
+  });
+  return res.json();
+}
+
+// ── Load config ──────────────────────────────────────────
+async function loadConfig() {
+  if (!WEBAPP_URL) return;
+  showOverlay('Cargando configuración...');
+  try {
+    const data = await callWebApp('getConfig');
+    if (!data || data.error) { showToast(data?.error||'Error al cargar.', 'error'); return; }
+    populateForm(data);
+    showToast('Configuración cargada.', 'success');
+  } catch(e) {
+    showToast('Error de conexión: '+e.message, 'error');
+  } finally {
+    hideOverlay();
+  }
+}
+
+function populateForm(data) {
+  // Cliente
+  const c = data.clientes?.[0] || {};
+  setVal('cliente_id',               c.cliente_id || 'CLI_01');
+  setVal('cliente_nombre',           c.cliente_nombre || '');
+  setVal('objetivo_margen_global_pct', c.objetivo_margen_global_pct || 20);
+  setVal('moneda',                   c.moneda || 'ARS');
+  setVal('semana_inicio_dia',        c.semana_inicio_dia || 'LUNES');
+
+  // Canales
+  const container = document.getElementById('canalesContainer');
+  container.innerHTML = '';
+  canalesData = [];
+
+  if (data.canales && data.canales.length) {
+    data.canales.forEach(canal => {
+      const cc = (data.clienteCanales||[]).find(x=>x.canal_id===canal.canal_id) || {};
+      const gastos = (data.gastos||[]).filter(g=>g.canal_id===canal.canal_id);
+      addCanalFromData(canal, cc, gastos);
+    });
+  } else {
+    // Canales default
+    addCanalFromData(
+      {canal_id:'CAN_ML', canal_nombre:'Mercado Libre', tipo_canal:'MARKETPLACE', activo_global:'ACTIVO'},
+      {activo_cliente:'ACTIVO', objetivo_margen_canal_pct:25},
+      [{nombre_gasto:'Comisión ML',tipo_gasto:'COMISION',modo_calculo:'PCT_SOBRE_VENTA',valor:13,activo:'ACTIVO'}]
+    );
+    addCanalFromData(
+      {canal_id:'CAN_TN', canal_nombre:'Tienda Nube', tipo_canal:'E_COMMERCE', activo_global:'ACTIVO'},
+      {activo_cliente:'ACTIVO', objetivo_margen_canal_pct:20},
+      [{nombre_gasto:'Comisión TN',tipo_gasto:'COMISION',modo_calculo:'PCT_SOBRE_VENTA',valor:2,activo:'ACTIVO'}]
+    );
+    addCanalFromData(
+      {canal_id:'CAN_LOCAL', canal_nombre:'Local Físico', tipo_canal:'FISICO', activo_global:'ACTIVO'},
+      {activo_cliente:'ACTIVO', objetivo_margen_canal_pct:18},
+      [{nombre_gasto:'Alquiler',tipo_gasto:'PLATAFORMA',modo_calculo:'MANUAL',valor:8000,activo:'ACTIVO'}]
+    );
+  }
+}
+
+// ── Canal rendering ──────────────────────────────────────
+function addCanal() {
+  addCanalFromData(
+    {canal_id:'CAN_NUEVO_'+Date.now(), canal_nombre:'Nuevo canal', tipo_canal:'OTRO', activo_global:'ACTIVO'},
+    {activo_cliente:'ACTIVO', objetivo_margen_canal_pct:20},
+    []
+  );
+}
+
+function addCanalFromData(canal, cc, gastos) {
+  const id = 'canal_'+canalesCounter++;
+  const activo = (cc.activo_cliente||canal.activo_global||'ACTIVO') === 'ACTIVO';
+
+  canalesData.push({ id, canal, cc, gastos });
+
+  const div = document.createElement('div');
+  div.className = 'canal-card' + (activo?'':' inactive');
+  div.id = id;
+  div.innerHTML = `
+    <div class="canal-header">
+      <label class="canal-toggle">
+        <input type="checkbox" ${activo?'checked':''} onchange="toggleCanal('${id}', this.checked)">
+        <div class="canal-toggle-track"></div>
+        <div class="canal-toggle-thumb"></div>
+      </label>
+      <input class="canal-name-input" type="text" value="${canal.canal_nombre||''}" placeholder="Nombre del canal" data-canal="${id}" data-field="canal_nombre">
+      <select class="form-select" style="width:140px;font-size:12px" data-canal="${id}" data-field="tipo_canal">
+        ${TIPOS_CANAL.map(t=>`<option value="${t}" ${canal.tipo_canal===t?'selected':''}>${t}</option>`).join('')}
+      </select>
+      <button class="btn btn-danger btn-sm" onclick="removeCanal('${id}')" style="margin-left:8px">✕</button>
+    </div>
+    <div class="canal-body" id="body_${id}" style="${activo?'':'display:none'}">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">ID Canal</label>
+          <input class="form-input" type="text" value="${canal.canal_id||''}" data-canal="${id}" data-field="canal_id" placeholder="CAN_ML">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Objetivo margen canal (%)</label>
+          <input class="form-input" type="number" value="${cc.objetivo_margen_canal_pct||''}" data-canal="${id}" data-field="obj_margen" placeholder="20" min="0" max="100">
+          <span class="form-hint">Si está vacío, usa el objetivo global</span>
+        </div>
+      </div>
+
+      <div class="gastos-list">
+        <div class="gastos-title">Gastos del canal</div>
+        <div class="gasto-row-header">
+          <span class="gasto-col-label">Nombre</span>
+          <span class="gasto-col-label">Tipo / Modo</span>
+          <span class="gasto-col-label">Valor</span>
+          <span></span>
+        </div>
+        <div id="gastos_${id}">
+          ${gastos.map((g,i) => renderGastoRow(id, i, g)).join('')}
+        </div>
+        <button class="btn btn-secondary btn-sm" onclick="addGasto('${id}')" style="margin-top:6px">+ Agregar gasto</button>
+      </div>
+    </div>
+  `;
+
+  document.getElementById('canalesContainer').appendChild(div);
+}
+
+function renderGastoRow(canalId, idx, g) {
+  return `
+    <div class="gasto-row" id="gasto_${canalId}_${idx}">
+      <input class="form-input" type="text" value="${g.nombre_gasto||''}" placeholder="Nombre del gasto" data-gasto="${canalId}_${idx}" data-field="nombre_gasto">
+      <select class="form-select" data-gasto="${canalId}_${idx}" data-field="modo_calculo">
+        ${MODOS_CALCULO.map(m=>`<option value="${m}" ${g.modo_calculo===m?'selected':''}>${m}</option>`).join('')}
+      </select>
+      <input class="form-input" type="number" value="${g.valor||''}" placeholder="Valor" data-gasto="${canalId}_${idx}" data-field="valor">
+      <button class="btn-remove" onclick="removeGasto('${canalId}_${idx}')">✕</button>
+    </div>
+  `;
+}
+
+function addGasto(canalId) {
+  const container = document.getElementById('gastos_'+canalId);
+  const idx = container.children.length;
+  const div = document.createElement('div');
+  div.innerHTML = renderGastoRow(canalId, idx, {});
+  container.appendChild(div.firstElementChild);
+}
+
+function removeGasto(key) {
+  const el = document.getElementById('gasto_'+key);
+  if (el) el.remove();
+}
+
+function toggleCanal(id, active) {
+  const card = document.getElementById(id);
+  const body = document.getElementById('body_'+id);
+  card.classList.toggle('inactive', !active);
+  body.style.display = active ? '' : 'none';
+}
+
+function removeCanal(id) {
+  const el = document.getElementById(id);
+  if (el) el.remove();
+}
+
+// ── Collect form data ────────────────────────────────────
+function collectData() {
+  const clienteId = getVal('cliente_id');
+  const cliente = {
+    cliente_id:                 clienteId,
+    cliente_nombre:             getVal('cliente_nombre'),
+    moneda:                     getVal('moneda'),
+    timezone:                   'America/Argentina/Buenos_Aires',
+    semana_inicio_dia:          getVal('semana_inicio_dia'),
+    objetivo_margen_global_pct: parseFloat(getVal('objetivo_margen_global_pct'))||20,
+    activo:                     'ACTIVO',
+    created_at:                 new Date().toISOString(),
+    updated_at:                 new Date().toISOString()
+  };
+
+  const canalesCards = document.querySelectorAll('.canal-card');
+  const canales = [];
+
+  canalesCards.forEach(card => {
+    const cid = card.id;
+    const activo = card.querySelector('input[type=checkbox]').checked;
+    const canalId   = card.querySelector('[data-field="canal_id"]')?.value || cid;
+    const nombre    = card.querySelector('[data-field="canal_nombre"]')?.value || '';
+    const tipo      = card.querySelector('[data-field="tipo_canal"]')?.value || 'OTRO';
+    const objMargen = parseFloat(card.querySelector('[data-field="obj_margen"]')?.value)||null;
+
+    const gastoRows = card.querySelectorAll('[data-gasto]');
+    const gastosMap = {};
+    gastoRows.forEach(el => {
+      const key   = el.dataset.gasto;
+      const field = el.dataset.field;
+      if (!gastosMap[key]) gastosMap[key] = {};
+      gastosMap[key][field] = el.value;
+    });
+
+    const gastos = Object.values(gastosMap)
+      .filter(g => g.nombre_gasto)
+      .map((g,i) => ({
+        gasto_id:     `G_${canalId}_${i+1}`,
+        cliente_id:   clienteId,
+        canal_id:     canalId,
+        nombre_gasto: g.nombre_gasto || '',
+        tipo_gasto:   'COMISION',
+        modo_calculo: g.modo_calculo || 'PCT_SOBRE_VENTA',
+        valor:        parseFloat(g.valor)||0,
+        moneda:       getVal('moneda'),
+        aplica_si_cuotas: 'NO',
+        origen:       'MANUAL',
+        vigente_desde: '2025-01-01',
+        vigente_hasta: '2030-12-31',
+        fecha_revision: new Date().toISOString().split('T')[0],
+        activo:       'ACTIVO',
+        notas:        ''
+      }));
+
+    const ccId = `CC_${clienteId}_${canalId}`;
+    canales.push({
+      canal_id:     canalId,
+      canal_nombre: nombre,
+      tipo_canal:   tipo,
+      descripcion:  '',
+      activo_global: activo ? 'ACTIVO' : 'INACTIVO',
+      cc: {
+        cliente_canal_id:           ccId,
+        cliente_id:                 clienteId,
+        canal_id:                   canalId,
+        activo_cliente:             activo ? 'ACTIVO' : 'INACTIVO',
+        prioridad_canal:            1,
+        objetivo_margen_canal_pct:  objMargen || '',
+        notas:                      '',
+        created_at:                 new Date().toISOString(),
+        updated_at:                 new Date().toISOString()
+      },
+      gastos
+    });
+  });
+
+  return { cliente, canales };
+}
+
+// ── Save ─────────────────────────────────────────────────
+async function saveAll() {
+  if (!WEBAPP_URL) { showToast('Primero conectá el Web App.', 'error'); return; }
+  showOverlay('Guardando configuración...');
+  try {
+    const payload = collectData();
+    const res = await callWebApp('saveConfig', payload);
+    if (res?.error) { showToast(res.error, 'error'); return; }
+    showToast('✓ Configuración guardada correctamente.', 'success');
+  } catch(e) {
+    showToast('Error: '+e.message, 'error');
+  } finally {
+    hideOverlay();
+  }
+}
+
+async function saveAndRun() {
+  if (!WEBAPP_URL) { showToast('Primero conectá el Web App.', 'error'); return; }
+  showOverlay('Guardando configuración...');
+  try {
+    const payload = collectData();
+    const saveRes = await callWebApp('saveConfig', payload);
+    if (saveRes?.error) { showToast(saveRes.error, 'error'); return; }
+
+    showOverlay('Ejecutando motor...');
+    const runRes = await callWebApp('runMotor');
+    if (runRes?.error) { showToast(runRes.error, 'error'); return; }
+
+    showToast('✓ Motor ejecutado. Output actualizado.', 'success');
+  } catch(e) {
+    showToast('Error: '+e.message, 'error');
+  } finally {
+    hideOverlay();
+  }
+}
+
+// ── Helpers ──────────────────────────────────────────────
+function getVal(id){ return document.getElementById(id)?.value||''; }
+function setVal(id,v){ const el=document.getElementById(id); if(el) el.value=v; }
+
+function showToast(msg, type='success') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = `toast ${type} visible`;
+  setTimeout(()=>t.classList.remove('visible'), 3500);
+}
+
+function showOverlay(msg) {
+  document.getElementById('overlayText').textContent = msg;
+  document.getElementById('loadingOverlay').classList.add('visible');
+}
+
+function hideOverlay() {
+  document.getElementById('loadingOverlay').classList.remove('visible');
+}
+
+// ── Init ─────────────────────────────────────────────────
+if (WEBAPP_URL) {
+  document.getElementById('setupBanner').style.display = 'none';
+  document.getElementById('webappUrl').value = WEBAPP_URL;
+  loadConfig();
+} else {
+  // Mostrar canales default sin conectar
+  populateForm({});
+}
+
+// Aplicar tema guardado
+if (!isDark) document.body.classList.add('light');
+</script>
+</body>
+</html>
