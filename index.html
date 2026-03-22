@@ -140,8 +140,14 @@
   .params-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:24px; }
   .param-card { background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:16px 18px; }
   .param-card-title { font-size:11px; font-weight:700; color:var(--text-dim); text-transform:uppercase; letter-spacing:.08em; margin-bottom:12px; }
-  .param-row { display:flex; justify-content:space-between; align-items:center; padding:6px 0; border-bottom:1px solid var(--border); }
+  .param-row { display:flex; justify-content:space-between; align-items:center; padding:6px 0; border-bottom:1px solid var(--border); gap:8px; }
   .param-row:last-child { border-bottom:none; }
+  /* Param tooltip */
+  .ptip { position:relative; display:inline-flex; align-items:center; gap:5px; }
+  .ptip-icon { width:13px; height:13px; border-radius:50%; background:var(--surface2); border:1px solid var(--border); color:var(--text-muted); font-size:8px; font-weight:700; display:inline-flex; align-items:center; justify-content:center; cursor:help; flex-shrink:0; font-family:'DM Mono',monospace; }
+  .ptip-box { display:none; position:fixed; background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:10px 12px; width:240px; font-size:12px; color:var(--text-muted); line-height:1.5; z-index:9999; box-shadow:0 8px 32px rgba(0,0,0,.5); pointer-events:none; }
+  .ptip-box strong { display:block; color:var(--text); font-weight:600; margin-bottom:3px; font-size:12px; }
+  .ptip-box.visible { display:block; }
   .param-label { font-size:12px; color:var(--text-muted); }
   .param-value { font-family:'DM Mono',monospace; font-size:13px; font-weight:500; color:var(--text); }
 
@@ -413,23 +419,27 @@ function sortBy(col){
 }
 
 // ── Parámetros ────────────────────────────────────────────
+function ptip(title, text) {
+  return `<span class="ptip-icon" data-title="${title}" data-text="${text}">?</span>`;
+}
+
 function renderParametros() {
   if (!allData.length) return;
   const clientes = [...new Set(allData.map(r=>r.cliente_nombre))];
   const canales  = [...new Set(allData.map(r=>r.canal_nombre))];
   const umbrales = [
-    {label:'Stock bajo (umbral)', value:'< 2 semanas'},
-    {label:'Sobrestock (umbral)', value:'> 8 semanas'},
-    {label:'Semanas demanda reciente', value:'4 semanas'},
-    {label:'Peso semana 1 (más reciente)', value:'40%'},
-    {label:'Peso semana 2', value:'30%'},
-    {label:'Peso semana 3', value:'20%'},
-    {label:'Peso semana 4', value:'10%'},
-    {label:'Score pérdida', value:'100 pts'},
-    {label:'Score riesgo quiebre', value:'50 pts'},
-    {label:'Score sobrestock', value:'35 pts'},
-    {label:'Score margen bajo', value:'25 pts'},
-    {label:'Score oportunidad (empujar)', value:'15 pts'},
+    {label:'Stock bajo (umbral)', value:'< 2 semanas', tip:'Si la cobertura de stock cae por debajo de 2 semanas, el motor activa RIESGO_QUIEBRE. Significa que al ritmo actual de ventas, el stock se agota en menos de 2 semanas.'},
+    {label:'Sobrestock (umbral)', value:'> 8 semanas', tip:'Si la cobertura supera 8 semanas, el motor considera que hay exceso de inventario y puede sugerir LIQUIDAR. Inmovilizás capital innecesariamente.'},
+    {label:'Semanas demanda reciente', value:'4 semanas', tip:'El motor calcula la demanda usando las últimas 4 semanas de ventas, con mayor peso en las más recientes.'},
+    {label:'Peso semana 1 (más reciente)', value:'40%', tip:'La semana más reciente pesa 40% en el cálculo de demanda. Lo reciente importa más que lo antiguo.'},
+    {label:'Peso semana 2', value:'30%', tip:'La segunda semana más reciente aporta el 30% al promedio ponderado de demanda.'},
+    {label:'Peso semana 3', value:'20%', tip:'La tercera semana aporta el 20%.'},
+    {label:'Peso semana 4', value:'10%', tip:'La semana más antigua del período aporta solo el 10%.'},
+    {label:'Score pérdida', value:'100 pts', tip:'Una prenda con margen negativo suma 100 puntos de criticidad. Es la situación más urgente: estás perdiendo dinero en cada venta.'},
+    {label:'Score riesgo quiebre', value:'50 pts', tip:'Stock para menos de 2 semanas suma 50 pts. Si no reponés a tiempo, perdés ventas y clientes.'},
+    {label:'Score sobrestock', value:'35 pts', tip:'Más de 8 semanas de cobertura suma 35 pts. Capital inmovilizado sin rotar.'},
+    {label:'Score margen bajo', value:'25 pts', tip:'Margen por debajo del objetivo configurado suma 25 pts. No estás perdiendo plata, pero tampoco cumplís la meta de rentabilidad.'},
+    {label:'Score oportunidad (empujar)', value:'15 pts', tip:'Margen bueno + stock disponible + ventas activas. El motor sugiere invertir en pauta para acelerar las ventas.'},
   ];
   const margenPorCanal = {};
   canales.forEach(c => {
@@ -441,25 +451,28 @@ function renderParametros() {
     'Tienda Nube':   [{nombre:'Comisión TN',tipo:'PCT_SOBRE_VENTA',valor:'2%'},{nombre:'Pasarela pago',tipo:'PCT_SOBRE_VENTA',valor:'3.5%'}],
     'Local Físico':  [{nombre:'Alquiler',tipo:'MANUAL (prorrateo)',valor:'$8.000/sem'},{nombre:'Comisión galería',tipo:'PCT_SOBRE_VENTA',valor:'5%'}],
   };
+  const prow = (label, value, tip) =>
+    `<div class="param-row"><span class="param-label">${label}${tip?` ${ptip(label,tip)}`:''}</span><span class="param-value">${value}</span></div>`;
+
   let html = `
     <div class="params-grid">
       <div class="param-card">
         <div class="param-card-title">Cliente</div>
-        ${clientes.map(c=>`<div class="param-row"><span class="param-label">Nombre</span><span class="param-value">${c}</span></div>`).join('')}
-        <div class="param-row"><span class="param-label">Objetivo margen global</span><span class="param-value">20%</span></div>
-        <div class="param-row"><span class="param-label">Moneda</span><span class="param-value">ARS</span></div>
+        ${clientes.map(c=>prow('Nombre',c,'Nombre del cliente o marca configurado en el sistema.')).join('')}
+        ${prow('Objetivo margen global','20%','Ganancia mínima que buscás sobre el precio de venta, después de descontar todos los costos y gastos del canal. Si ningún canal tiene objetivo propio, se usa este valor.')}
+        ${prow('Moneda','ARS','Moneda en que se expresan todos los precios, costos y gastos del motor.')}
       </div>
       <div class="param-card">
         <div class="param-card-title">Umbrales del motor</div>
-        ${umbrales.slice(0,6).map(u=>`<div class="param-row"><span class="param-label">${u.label}</span><span class="param-value">${u.value}</span></div>`).join('')}
+        ${umbrales.slice(0,3).map(u=>prow(u.label,u.value,u.tip)).join('')}
       </div>
       <div class="param-card">
         <div class="param-card-title">Pesos de demanda</div>
-        ${umbrales.slice(3,7).map(u=>`<div class="param-row"><span class="param-label">${u.label}</span><span class="param-value">${u.value}</span></div>`).join('')}
+        ${umbrales.slice(3,7).map(u=>prow(u.label,u.value,u.tip)).join('')}
       </div>
       <div class="param-card">
         <div class="param-card-title">Score de criticidad</div>
-        ${umbrales.slice(7).map(u=>`<div class="param-row"><span class="param-label">${u.label}</span><span class="param-value">${u.value}</span></div>`).join('')}
+        ${umbrales.slice(7).map(u=>prow(u.label,u.value,u.tip)).join('')}
       </div>
     </div>
     <div class="page-subtitle" style="margin-bottom:16px">Configuración por canal</div>
@@ -481,6 +494,34 @@ function renderParametros() {
       </div>`;
   }).join('');
   document.getElementById('parametrosContent').innerHTML = html;
+  initParamTooltips();
+}
+
+function initParamTooltips() {
+  var box = document.getElementById('ptipBox');
+  if (!box) {
+    box = document.createElement('div');
+    box.id = 'ptipBox';
+    box.className = 'ptip-box';
+    document.body.appendChild(box);
+  }
+  document.querySelectorAll('.ptip-icon').forEach(function(icon) {
+    icon.addEventListener('mouseenter', function(e) {
+      box.innerHTML = '<strong>'+icon.dataset.title+'</strong>'+icon.dataset.text;
+      box.classList.add('visible');
+      posParamTip(e, box);
+    });
+    icon.addEventListener('mousemove', function(e){ posParamTip(e, box); });
+    icon.addEventListener('mouseleave', function(){ box.classList.remove('visible'); });
+  });
+}
+
+function posParamTip(e, box) {
+  var x = e.clientX + 12, y = e.clientY + 12;
+  if (x + 240 > window.innerWidth - 8) x = e.clientX - 252;
+  if (y + 120 > window.innerHeight - 8) y = e.clientY - 130;
+  box.style.left = x + 'px';
+  box.style.top  = y + 'px';
 }
 
 // ── Detail panel ─────────────────────────────────────────
@@ -571,6 +612,6 @@ function showPage(id, el) {
 // ── Init ─────────────────────────────────────────────────
 loadData();
 </script>
-<div class="version-badge">v1.1 · 22 Mar 2026</div>
+<div class="version-badge">v1.2 · 22 Mar 2026</div>
 </body>
 </html>
