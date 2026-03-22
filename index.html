@@ -7,15 +7,8 @@
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #0a0a0f;
-    --surface: #13131a;
-    --surface2: #1c1c26;
-    --border: #2a2a38;
-    --text: #e8e8f0;
-    --text-muted: #6b6b80;
-    --text-dim: #3a3a50;
-    --accent: #6366f1;
-
+    --bg: #0a0a0f; --surface: #13131a; --surface2: #1c1c26; --border: #2a2a38;
+    --text: #e8e8f0; --text-muted: #6b6b80; --text-dim: #3a3a50; --accent: #6366f1;
     --pausar-bg: #2d0f0f; --pausar-border: #7f1d1d; --pausar-text: #fca5a5;
     --quiebre-bg: #2d1a0a; --quiebre-border: #92400e; --quiebre-text: #fcd34d;
     --liquidar-bg: #1a1a0a; --liquidar-border: #713f12; --liquidar-text: #fde68a;
@@ -24,17 +17,31 @@
     --ok-bg: #141420; --ok-border: #2a2a40; --ok-text: #a5b4fc;
   }
 
+  body.light {
+    --bg: #f5f5f8; --surface: #ffffff; --surface2: #f0f0f5; --border: #dddde8;
+    --text: #1a1a2e; --text-muted: #6b6b80; --text-dim: #aaaabc; --accent: #6366f1;
+    --pausar-bg: #fee2e2; --pausar-border: #fca5a5; --pausar-text: #991b1b;
+    --quiebre-bg: #fef3c7; --quiebre-border: #fcd34d; --quiebre-text: #92400e;
+    --liquidar-bg: #fefce8; --liquidar-border: #fde68a; --liquidar-text: #713f12;
+    --ajustar-bg: #eff6ff; --ajustar-border: #93c5fd; --ajustar-text: #1e40af;
+    --empujar-bg: #f0fdf4; --empujar-border: #86efac; --empujar-text: #14532d;
+    --ok-bg: #eef2ff; --ok-border: #a5b4fc; --ok-text: #3730a3;
+  }
+
   * { margin:0; padding:0; box-sizing:border-box; }
-  body { background:var(--bg); color:var(--text); font-family:'DM Sans',sans-serif; font-size:14px; min-height:100vh; }
+  body { background:var(--bg); color:var(--text); font-family:'DM Sans',sans-serif; font-size:14px; min-height:100vh; transition:background .2s,color .2s; }
 
   /* Header */
-  .header { padding:20px 32px 0; border-bottom:1px solid var(--border); background:var(--surface); }
+  .header { padding:20px 32px 0; border-bottom:1px solid var(--border); background:var(--surface); transition:background .2s,border-color .2s; }
   .header-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
   .brand { display:flex; align-items:center; gap:10px; }
   .brand-dot { width:8px; height:8px; background:#86efac; border-radius:50%; animation:pulse 2s infinite; }
   @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
   .brand-name { font-size:13px; font-weight:500; color:var(--text-muted); letter-spacing:.08em; text-transform:uppercase; }
+  .header-right { display:flex; align-items:center; gap:8px; }
   .week-label { font-family:'DM Mono',monospace; font-size:12px; color:var(--text-muted); background:var(--surface2); border:1px solid var(--border); padding:4px 10px; border-radius:4px; }
+  .theme-btn { background:var(--surface2); border:1px solid var(--border); border-radius:6px; padding:4px 9px; cursor:pointer; font-size:15px; line-height:1; transition:border-color .15s; }
+  .theme-btn:hover { border-color:var(--accent); }
 
   .nav { display:flex; }
   .nav-tab { padding:11px 20px; font-size:13px; font-weight:500; color:var(--text-muted); cursor:pointer; border-bottom:2px solid transparent; transition:all .15s; user-select:none; }
@@ -57,7 +64,7 @@
   .badge-OK            { background:var(--ok-bg);      border-color:var(--ok-border);      color:var(--ok-text); }
 
   /* Table */
-  .table-wrap { background:var(--surface); border:1px solid var(--border); border-radius:8px; overflow:hidden; }
+  .table-wrap { background:var(--surface); border:1px solid var(--border); border-radius:8px; overflow:hidden; transition:background .2s,border-color .2s; }
   .table-toolbar { display:flex; align-items:center; gap:10px; padding:12px 16px; border-bottom:1px solid var(--border); flex-wrap:wrap; }
   .search-input { background:var(--surface2); border:1px solid var(--border); border-radius:6px; padding:7px 12px; color:var(--text); font-size:13px; font-family:'DM Sans',sans-serif; width:200px; outline:none; transition:border-color .15s; }
   .search-input::placeholder { color:var(--text-muted); }
@@ -87,30 +94,6 @@
   .cob-critica { color:#fca5a5; font-family:'DM Mono',monospace; font-size:12px; }
   .cob-alta    { color:#fcd34d; font-family:'DM Mono',monospace; font-size:12px; }
   .cob-normal  { color:var(--text-muted); font-family:'DM Mono',monospace; font-size:12px; }
-
-  /* Hover tooltip */
-  .row-tooltip {
-    display:none;
-    position:fixed;
-    background:var(--surface);
-    border:1px solid var(--border);
-    border-radius:8px;
-    padding:14px 16px;
-    z-index:200;
-    min-width:280px;
-    max-width:340px;
-    box-shadow:0 8px 32px rgba(0,0,0,.6);
-    pointer-events:none;
-  }
-  .row-tooltip.visible { display:block; }
-  .tooltip-title { font-size:13px; font-weight:600; margin-bottom:10px; padding-bottom:8px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:8px; }
-  .tooltip-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:10px; }
-  .tooltip-metric { display:flex; flex-direction:column; gap:2px; }
-  .tooltip-metric-label { font-size:10px; color:var(--text-dim); text-transform:uppercase; letter-spacing:.06em; font-weight:600; }
-  .tooltip-metric-value { font-family:'DM Mono',monospace; font-size:13px; font-weight:500; }
-  .tooltip-field { margin-bottom:6px; }
-  .tooltip-field-label { font-size:10px; color:var(--text-dim); text-transform:uppercase; letter-spacing:.06em; font-weight:600; margin-bottom:2px; }
-  .tooltip-field-value { font-size:12px; color:var(--text-muted); line-height:1.4; }
 
   /* Plan semanal cards */
   .plan-grid { display:flex; flex-direction:column; gap:12px; }
@@ -196,7 +179,10 @@
       <div class="brand-dot"></div>
       <span class="brand-name">Tablero de Decisiones</span>
     </div>
-    <span class="week-label" id="weekLabel">Cargando...</span>
+    <div class="header-right">
+      <button class="theme-btn" onclick="toggleTheme()" id="themeBtn">☀️</button>
+      <span class="week-label" id="weekLabel">Cargando...</span>
+    </div>
   </div>
   <nav class="nav">
     <div class="nav-tab active" onclick="showPage('plan',this)">Plan Semanal</div>
@@ -247,9 +233,6 @@
   </div>
 </div>
 
-<!-- Tooltip hover -->
-<div class="row-tooltip" id="rowTooltip"></div>
-
 <!-- Detail overlay -->
 <div class="detail-overlay" id="detailOverlay" onclick="closeDetail(event)">
   <div class="detail-panel" id="detailPanel">
@@ -261,16 +244,21 @@
 <script>
 const CSV_OUTPUT = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSBCniMPQSL9AB-c0dD4oxxMPp6KFWhZ0POPViUhYDMRdpO9Lp83tvKv7KSS-cgP1NTjPr6VHlwSSV2/pub?gid=1322538543&single=true&output=csv';
 
-// Para los parámetros necesitamos otras hojas publicadas como CSV
-// Por ahora los mostramos desde los datos disponibles en output_decisiones
-// Cuando publiques clientes/canales/gastos_canal como CSV, reemplazá estas URLs:
-const CSV_CLIENTES = ''; // URL CSV hoja clientes
-const CSV_CANALES  = ''; // URL CSV hoja cliente_canales
-const CSV_GASTOS   = ''; // URL CSV hoja gastos_canal
+const CSV_CLIENTES = '';
+const CSV_CANALES  = '';
+const CSV_GASTOS   = '';
 
 let allData = [];
 let sortCol = 'rank_cliente_semana';
 let sortDir = 'asc';
+let isDark = true;
+
+// ── Tema ─────────────────────────────────────────────────
+function toggleTheme() {
+  isDark = !isDark;
+  document.body.classList.toggle('light', !isDark);
+  document.getElementById('themeBtn').textContent = isDark ? '☀️' : '🌙';
+}
 
 // ── CSV parser ──────────────────────────────────────────
 function parseCSV(text) {
@@ -400,7 +388,7 @@ function renderTable() {
   const tbody = `<tbody>${filtered.map(r=>{
     const rank=num(r.rank_cliente_semana);
     const idx=allData.indexOf(r);
-    return `<tr onclick="openDetail(${idx})" onmouseenter="showTooltip(event,${idx})" onmouseleave="hideTooltip()">
+    return `<tr onclick="openDetail(${idx})">
       <td class="td-rank ${rank<=3?'top3':''}">${rank||'-'}</td>
       <td class="td-producto">${r.producto||'-'}</td>
       <td class="td-canal">${r.canal_nombre||'-'}</td>
@@ -421,79 +409,11 @@ function sortBy(col){
   renderTable();
 }
 
-// ── Tooltip hover ────────────────────────────────────────
-function showTooltip(e, idx) {
-  const r = allData[idx];
-  if (!r) return;
-  const tt = document.getElementById('rowTooltip');
-  tt.innerHTML = `
-    <div class="tooltip-title">
-      ${badge(r.accion)}
-      <span>${r.producto||'-'} · ${r.canal_nombre||'-'}</span>
-    </div>
-    <div class="tooltip-grid">
-      <div class="tooltip-metric">
-        <span class="tooltip-metric-label">Margen neto</span>
-        <span class="tooltip-metric-value ${pctClass(r.margen_neto_pct)}">${pct(r.margen_neto_pct)}</span>
-      </div>
-      <div class="tooltip-metric">
-        <span class="tooltip-metric-label">Cobertura</span>
-        <span class="tooltip-metric-value ${cobClass(r.cobertura_stock)}">${num(r.cobertura_stock).toFixed(1)} sem</span>
-      </div>
-      <div class="tooltip-metric">
-        <span class="tooltip-metric-label">Precio actual</span>
-        <span class="tooltip-metric-value">${money(r.precio_actual)}</span>
-      </div>
-      <div class="tooltip-metric">
-        <span class="tooltip-metric-label">Precio mínimo</span>
-        <span class="tooltip-metric-value">${r.precio_minimo_recomendado?money(r.precio_minimo_recomendado):'N/A'}</span>
-      </div>
-      <div class="tooltip-metric">
-        <span class="tooltip-metric-label">Ventas/sem</span>
-        <span class="tooltip-metric-value">${r.ventas_semanales||'0'}</span>
-      </div>
-      <div class="tooltip-metric">
-        <span class="tooltip-metric-label">Tope pauta</span>
-        <span class="tooltip-metric-value">${money(r.tope_economico_sugerido)}</span>
-      </div>
-    </div>
-    <div class="tooltip-field">
-      <div class="tooltip-field-label">Próximo paso</div>
-      <div class="tooltip-field-value">${r.proximo_paso||'-'}</div>
-    </div>
-  `;
-  positionTooltip(e);
-  tt.classList.add('visible');
-}
-
-function positionTooltip(e) {
-  const tt = document.getElementById('rowTooltip');
-  const x = e.clientX+16;
-  const y = e.clientY+16;
-  const w = tt.offsetWidth||300;
-  const h = tt.offsetHeight||200;
-  tt.style.left = (x+w>window.innerWidth ? x-w-32 : x)+'px';
-  tt.style.top  = (y+h>window.innerHeight ? y-h-32 : y)+'px';
-}
-
-function hideTooltip() {
-  document.getElementById('rowTooltip').classList.remove('visible');
-}
-
-document.addEventListener('mousemove', e => {
-  const tt = document.getElementById('rowTooltip');
-  if (tt.classList.contains('visible')) positionTooltip(e);
-});
-
 // ── Parámetros ────────────────────────────────────────────
 function renderParametros() {
   if (!allData.length) return;
-
-  // Inferir configuración desde los datos del output
   const clientes = [...new Set(allData.map(r=>r.cliente_nombre))];
   const canales  = [...new Set(allData.map(r=>r.canal_nombre))];
-
-  // Umbrales del motor (valores default del script)
   const umbrales = [
     {label:'Stock bajo (umbral)', value:'< 2 semanas'},
     {label:'Sobrestock (umbral)', value:'> 8 semanas'},
@@ -508,21 +428,16 @@ function renderParametros() {
     {label:'Score margen bajo', value:'25 pts'},
     {label:'Score oportunidad (empujar)', value:'15 pts'},
   ];
-
-  // Inferir márgenes por canal desde output
   const margenPorCanal = {};
   canales.forEach(c => {
     const rows = allData.filter(r=>r.canal_nombre===c);
     if (rows.length) margenPorCanal[c] = rows[0].objetivo_margen_resuelto_pct || '-';
   });
-
-  // Inferir gastos por canal desde auditoría (aproximación)
   const gastosPorCanal = {
     'Mercado Libre': [{nombre:'Comisión ML',tipo:'PCT_SOBRE_VENTA',valor:'13%'},{nombre:'Retención imp.',tipo:'PCT_SOBRE_VENTA',valor:'3%'}],
     'Tienda Nube':   [{nombre:'Comisión TN',tipo:'PCT_SOBRE_VENTA',valor:'2%'},{nombre:'Pasarela pago',tipo:'PCT_SOBRE_VENTA',valor:'3.5%'}],
     'Local Físico':  [{nombre:'Alquiler',tipo:'MANUAL (prorrateo)',valor:'$8.000/sem'},{nombre:'Comisión galería',tipo:'PCT_SOBRE_VENTA',valor:'5%'}],
   };
-
   let html = `
     <div class="params-grid">
       <div class="param-card">
@@ -546,7 +461,6 @@ function renderParametros() {
     </div>
     <div class="page-subtitle" style="margin-bottom:16px">Configuración por canal</div>
   `;
-
   html += canales.map(c => {
     const gastos = gastosPorCanal[c] || [];
     const obj = margenPorCanal[c];
@@ -563,7 +477,6 @@ function renderParametros() {
         </table>` : '<div style="padding:12px 14px;font-size:12px;color:var(--text-muted)">Sin gastos configurados.</div>'}
       </div>`;
   }).join('');
-
   document.getElementById('parametrosContent').innerHTML = html;
 }
 
@@ -571,7 +484,6 @@ function renderParametros() {
 function openDetail(idx) {
   const r = allData[idx];
   if (!r) return;
-  hideTooltip();
   document.getElementById('detailContent').innerHTML = `
     <div class="detail-header">
       <div class="detail-title-block">
