@@ -318,7 +318,7 @@ async function loadData() {
 
 // ── Plan Semanal ─────────────────────────────────────────
 function renderPlan() {
-  const top3 = allData.filter(r => num(r.rank_cliente_semana)<=3);
+  const top3 = allData.slice(0, 3);
   if (!top3.length){ document.getElementById('planGrid').innerHTML='<div class="empty">Sin datos.</div>'; return; }
   const rc = ['rank-1','rank-2','rank-3'];
   document.getElementById('planGrid').innerHTML = top3.map((r,i) => `
@@ -612,6 +612,6 @@ function showPage(id, el) {
 // ── Init ─────────────────────────────────────────────────
 loadData();
 </script>
-<div class="version-badge">v1.2 · 22 Mar 2026</div>
+<div class="version-badge">v1.3 · 22 Mar 2026</div>
 </body>
 </html>
