@@ -62,6 +62,7 @@
   .badge-AJUSTAR_PRECIO{ background:var(--ajustar-bg); border-color:var(--ajustar-border); color:var(--ajustar-text); }
   .badge-EMPUJAR       { background:var(--empujar-bg); border-color:var(--empujar-border); color:var(--empujar-text); }
   .badge-OK            { background:var(--ok-bg);      border-color:var(--ok-border);      color:var(--ok-text); }
+  .badge-SIN_DATOS     { background:var(--surface2);   border-color:var(--border);          color:var(--text-dim); }
 
   /* Table */
   .table-wrap { background:var(--surface); border:1px solid var(--border); border-radius:8px; overflow:hidden; transition:background .2s,border-color .2s; }
@@ -395,10 +396,20 @@ function renderTable() {
       ${c.label}${sortCol===c.key?(sortDir==='asc'?' ↑':' ↓'):''}
     </th>`).join('')}</tr></thead>`;
 
-  const tbody = `<tbody>${filtered.map(r=>{
-    const rank=num(r.rank_cliente_semana);
-    const idx=allData.indexOf(r);
-    return `<tr onclick="openDetail(${idx})">
+  const conDatos  = filtered.filter(r => r.accion !== 'SIN_DATOS');
+  const sinDatos  = filtered.filter(r => r.accion === 'SIN_DATOS');
+  const ordenados = [...conDatos, ...sinDatos];
+
+  let filas = '';
+  let sepInsertado = false;
+  ordenados.forEach(r => {
+    if (!sepInsertado && r.accion === 'SIN_DATOS') {
+      sepInsertado = true;
+      filas += `<tr style="cursor:default"><td colspan="8" style="padding:10px 14px;font-size:10px;font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:.1em;background:var(--surface2);border-bottom:1px solid var(--border);">Sin datos cargados</td></tr>`;
+    }
+    const rank = num(r.rank_cliente_semana);
+    const idx  = allData.indexOf(r);
+    filas += `<tr onclick="openDetail(${idx})">
       <td class="td-rank ${rank<=3?'top3':''}">${rank||'-'}</td>
       <td class="td-producto">${r.producto||'-'}</td>
       <td class="td-canal">${r.canal_nombre||'-'}</td>
@@ -408,8 +419,9 @@ function renderTable() {
       <td class="${cobClass(r.cobertura_stock)}">${num(r.cobertura_stock).toFixed(1)} sem</td>
       <td class="td-paso">${r.proximo_paso||'-'}</td>
     </tr>`;
-  }).join('')}</tbody>`;
+  });
 
+  const tbody = `<tbody>${filas}</tbody>`;
   document.getElementById('tableContainer').innerHTML = `<table>${thead}${tbody}</table>`;
 }
 
@@ -613,6 +625,6 @@ function showPage(id, el) {
 // ── Init ─────────────────────────────────────────────────
 loadData();
 </script>
-<div class="version-badge">v1.4 · 22 Mar 2026</div>
+<div class="version-badge">v1.5 · 23 Mar 2026</div>
 </body>
 </html>
