@@ -15,6 +15,7 @@
     --ajustar-bg: #0a1628; --ajustar-border: #1e3a5f; --ajustar-text: #93c5fd;
     --empujar-bg: #0a1f0f; --empujar-border: #14532d; --empujar-text: #86efac;
     --ok-bg: #141420; --ok-border: #2a2a40; --ok-text: #a5b4fc;
+    --sinventas-bg: #1a1200; --sinventas-border: #78350f; --sinventas-text: #fb923c;
   }
 
   body.light {
@@ -26,6 +27,7 @@
     --ajustar-bg: #eff6ff; --ajustar-border: #93c5fd; --ajustar-text: #1e40af;
     --empujar-bg: #f0fdf4; --empujar-border: #86efac; --empujar-text: #14532d;
     --ok-bg: #eef2ff; --ok-border: #a5b4fc; --ok-text: #3730a3;
+    --sinventas-bg: #fff7ed; --sinventas-border: #fdba74; --sinventas-text: #c2410c;
   }
 
   * { margin:0; padding:0; box-sizing:border-box; }
@@ -62,7 +64,8 @@
   .badge-AJUSTAR_PRECIO{ background:var(--ajustar-bg); border-color:var(--ajustar-border); color:var(--ajustar-text); }
   .badge-EMPUJAR       { background:var(--empujar-bg); border-color:var(--empujar-border); color:var(--empujar-text); }
   .badge-OK            { background:var(--ok-bg);      border-color:var(--ok-border);      color:var(--ok-text); }
-  .badge-SIN_DATOS     { background:var(--surface2);   border-color:var(--border);          color:var(--text-dim); }
+  .badge-SIN_DATOS     { background:var(--surface2);   border-color:var(--border);         color:var(--text-dim); }
+  .badge-SIN_VENTAS    { background:var(--sinventas-bg); border-color:var(--sinventas-border); color:var(--sinventas-text); }
 
   /* Table */
   .table-wrap { background:var(--surface); border:1px solid var(--border); border-radius:8px; overflow:hidden; transition:background .2s,border-color .2s; }
@@ -143,7 +146,6 @@
   .param-card-title { font-size:11px; font-weight:700; color:var(--text-dim); text-transform:uppercase; letter-spacing:.08em; margin-bottom:12px; }
   .param-row { display:flex; justify-content:space-between; align-items:center; padding:6px 0; border-bottom:1px solid var(--border); gap:8px; }
   .param-row:last-child { border-bottom:none; }
-  /* Param tooltip */
   .ptip { position:relative; display:inline-flex; align-items:center; gap:5px; }
   .ptip-icon { width:13px; height:13px; border-radius:50%; background:var(--surface2); border:1px solid var(--border); color:var(--text-muted); font-size:8px; font-weight:700; display:inline-flex; align-items:center; justify-content:center; cursor:help; flex-shrink:0; font-family:'DM Mono',monospace; }
   .ptip-box { display:none; position:fixed; background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:10px 12px; width:240px; font-size:12px; color:var(--text-muted); line-height:1.5; z-index:9999; box-shadow:0 8px 32px rgba(0,0,0,.5); pointer-events:none; }
@@ -225,6 +227,7 @@
         <option value="AJUSTAR_PRECIO">AJUSTAR_PRECIO</option>
         <option value="EMPUJAR">EMPUJAR</option>
         <option value="OK">OK</option>
+        <option value="SIN_VENTAS">SIN_VENTAS</option>
       </select>
       <span class="record-count" id="recordCount"></span>
     </div>
@@ -263,14 +266,12 @@ let sortCol = 'rank_cliente_semana';
 let sortDir = 'asc';
 let isDark = true;
 
-// ── Tema ─────────────────────────────────────────────────
 function toggleTheme() {
   isDark = !isDark;
   document.body.classList.toggle('light', !isDark);
   document.getElementById('themeBtn').textContent = isDark ? '☀️' : '🌙';
 }
 
-// ── CSV parser ──────────────────────────────────────────
 function parseCSV(text) {
   const lines = text.trim().split('\n');
   const headers = lines[0].split(',').map(h => h.trim().replace(/"/g,''));
@@ -289,7 +290,6 @@ function parseCSV(text) {
   }).filter(r => r.rank_cliente_semana||r.producto);
 }
 
-// ── Helpers ─────────────────────────────────────────────
 function num(v){ const n=parseFloat(String(v).replace(',','.')); return isNaN(n)?0:n; }
 function pct(v){ return (num(v)*100).toFixed(2)+'%'; }
 function money(v){ return '$'+num(v).toLocaleString('es-AR',{minimumFractionDigits:0}); }
@@ -297,7 +297,6 @@ function pctClass(v){ const n=num(v); return n<0?'negative':n<0.1?'warning':'pos
 function cobClass(v){ const n=num(v); return n<2?'cob-critica':n>8?'cob-alta':'cob-normal'; }
 function badge(a){ const t=(a||'').trim(); return `<span class="badge badge-${t}">${t}</span>`; }
 
-// ── Load data ────────────────────────────────────────────
 async function loadData() {
   try {
     const res = await fetch(CSV_OUTPUT+'&t='+Date.now());
@@ -317,9 +316,8 @@ async function loadData() {
   }
 }
 
-// ── Plan Semanal ─────────────────────────────────────────
 function renderPlan() {
-  const conDatos = allData.filter(r => num(r.precio_actual) > 0 || num(r.ventas_semanales) > 0);
+  const conDatos = allData.filter(r => r.accion !== 'SIN_DATOS' && r.accion !== 'SIN_VENTAS' && (num(r.precio_actual) > 0 || num(r.ventas_semanales) > 0));
   const top3 = conDatos.slice(0, 3);
   if (!top3.length){ document.getElementById('planGrid').innerHTML='<div class="empty">Sin datos.</div>'; return; }
   const rc = ['rank-1','rank-2','rank-3'];
@@ -362,7 +360,6 @@ function renderPlan() {
   `).join('');
 }
 
-// ── Acciones table ───────────────────────────────────────
 function renderTable() {
   const search = (document.getElementById('searchInput')?.value||'').toLowerCase();
   const filterA = document.getElementById('filterAccion')?.value||'';
@@ -396,15 +393,22 @@ function renderTable() {
       ${c.label}${sortCol===c.key?(sortDir==='asc'?' ↑':' ↓'):''}
     </th>`).join('')}</tr></thead>`;
 
-  const conDatos  = filtered.filter(r => r.accion !== 'SIN_DATOS');
-  const sinDatos  = filtered.filter(r => r.accion === 'SIN_DATOS');
-  const ordenados = [...conDatos, ...sinDatos];
+  const conDatos   = filtered.filter(r => r.accion !== 'SIN_DATOS' && r.accion !== 'SIN_VENTAS');
+  const sinVentas  = filtered.filter(r => r.accion === 'SIN_VENTAS');
+  const sinDatos   = filtered.filter(r => r.accion === 'SIN_DATOS');
+  const ordenados  = [...conDatos, ...sinVentas, ...sinDatos];
 
   let filas = '';
-  let sepInsertado = false;
+  let sepSinVentasInsertado = false;
+  let sepSinDatosInsertado  = false;
+
   ordenados.forEach(r => {
-    if (!sepInsertado && r.accion === 'SIN_DATOS') {
-      sepInsertado = true;
+    if (!sepSinVentasInsertado && r.accion === 'SIN_VENTAS') {
+      sepSinVentasInsertado = true;
+      filas += `<tr style="cursor:default"><td colspan="8" style="padding:10px 14px;font-size:10px;font-weight:700;color:var(--sinventas-text);text-transform:uppercase;letter-spacing:.1em;background:var(--sinventas-bg);border-bottom:1px solid var(--border);">Canal sin ventas esta semana</td></tr>`;
+    }
+    if (!sepSinDatosInsertado && r.accion === 'SIN_DATOS') {
+      sepSinDatosInsertado = true;
       filas += `<tr style="cursor:default"><td colspan="8" style="padding:10px 14px;font-size:10px;font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:.1em;background:var(--surface2);border-bottom:1px solid var(--border);">Sin datos cargados</td></tr>`;
     }
     const rank = num(r.rank_cliente_semana);
@@ -421,8 +425,7 @@ function renderTable() {
     </tr>`;
   });
 
-  const tbody = `<tbody>${filas}</tbody>`;
-  document.getElementById('tableContainer').innerHTML = `<table>${thead}${tbody}</table>`;
+  document.getElementById('tableContainer').innerHTML = `<table>${thead}<tbody>${filas}</tbody></table>`;
 }
 
 function sortBy(col){
@@ -431,7 +434,6 @@ function sortBy(col){
   renderTable();
 }
 
-// ── Parámetros ────────────────────────────────────────────
 function ptip(title, text) {
   return `<span class="ptip-icon" data-title="${title}" data-text="${text}">?</span>`;
 }
@@ -441,18 +443,18 @@ function renderParametros() {
   const clientes = [...new Set(allData.map(r=>r.cliente_nombre))];
   const canales  = [...new Set(allData.map(r=>r.canal_nombre))];
   const umbrales = [
-    {label:'Stock bajo (umbral)', value:'< 2 semanas', tip:'Si la cobertura de stock cae por debajo de 2 semanas, el motor activa RIESGO_QUIEBRE. Significa que al ritmo actual de ventas, el stock se agota en menos de 2 semanas.'},
-    {label:'Sobrestock (umbral)', value:'> 8 semanas', tip:'Si la cobertura supera 8 semanas, el motor considera que hay exceso de inventario y puede sugerir LIQUIDAR. Inmovilizás capital innecesariamente.'},
-    {label:'Semanas demanda reciente', value:'4 semanas', tip:'El motor calcula la demanda usando las últimas 4 semanas de ventas, con mayor peso en las más recientes.'},
-    {label:'Peso semana 1 (más reciente)', value:'40%', tip:'La semana más reciente pesa 40% en el cálculo de demanda. Lo reciente importa más que lo antiguo.'},
-    {label:'Peso semana 2', value:'30%', tip:'La segunda semana más reciente aporta el 30% al promedio ponderado de demanda.'},
+    {label:'Stock bajo (umbral)', value:'< 2 semanas', tip:'Si la cobertura de stock cae por debajo de 2 semanas, el motor activa RIESGO_QUIEBRE.'},
+    {label:'Sobrestock (umbral)', value:'> 8 semanas', tip:'Si la cobertura supera 8 semanas, el motor considera que hay exceso de inventario.'},
+    {label:'Semanas demanda reciente', value:'4 semanas', tip:'El motor calcula la demanda usando las últimas 4 semanas de ventas.'},
+    {label:'Peso semana 1 (más reciente)', value:'40%', tip:'La semana más reciente pesa 40% en el cálculo de demanda.'},
+    {label:'Peso semana 2', value:'30%', tip:'La segunda semana más reciente aporta el 30%.'},
     {label:'Peso semana 3', value:'20%', tip:'La tercera semana aporta el 20%.'},
     {label:'Peso semana 4', value:'10%', tip:'La semana más antigua del período aporta solo el 10%.'},
-    {label:'Score pérdida', value:'100 pts', tip:'Una prenda con margen negativo suma 100 puntos de criticidad. Es la situación más urgente: estás perdiendo dinero en cada venta.'},
-    {label:'Score riesgo quiebre', value:'50 pts', tip:'Stock para menos de 2 semanas suma 50 pts. Si no reponés a tiempo, perdés ventas y clientes.'},
-    {label:'Score sobrestock', value:'35 pts', tip:'Más de 8 semanas de cobertura suma 35 pts. Capital inmovilizado sin rotar.'},
-    {label:'Score margen bajo', value:'25 pts', tip:'Margen por debajo del objetivo configurado suma 25 pts. No estás perdiendo plata, pero tampoco cumplís la meta de rentabilidad.'},
-    {label:'Score oportunidad (empujar)', value:'15 pts', tip:'Margen bueno + stock disponible + ventas activas. El motor sugiere invertir en pauta para acelerar las ventas.'},
+    {label:'Score pérdida', value:'100 pts', tip:'Margen negativo: estás perdiendo dinero en cada venta.'},
+    {label:'Score riesgo quiebre', value:'50 pts', tip:'Stock para menos de 2 semanas.'},
+    {label:'Score sobrestock', value:'35 pts', tip:'Más de 8 semanas de cobertura.'},
+    {label:'Score margen bajo', value:'25 pts', tip:'Margen por debajo del objetivo configurado.'},
+    {label:'Score oportunidad (empujar)', value:'15 pts', tip:'Margen bueno + stock disponible + ventas activas.'},
   ];
   const margenPorCanal = {};
   canales.forEach(c => {
@@ -471,8 +473,8 @@ function renderParametros() {
     <div class="params-grid">
       <div class="param-card">
         <div class="param-card-title">Cliente</div>
-        ${clientes.map(c=>prow('Nombre',c,'Nombre del cliente o marca configurado en el sistema.')).join('')}
-        ${prow('Objetivo margen global','20%','Ganancia mínima que buscás sobre el precio de venta, después de descontar todos los costos y gastos del canal. Si ningún canal tiene objetivo propio, se usa este valor.')}
+        ${clientes.map(c=>prow('Nombre',c,'Nombre del cliente configurado en el sistema.')).join('')}
+        ${prow('Objetivo margen global','20%','Ganancia mínima que buscás sobre el precio de venta, después de descontar todos los costos y gastos del canal.')}
         ${prow('Moneda','ARS','Moneda en que se expresan todos los precios, costos y gastos del motor.')}
       </div>
       <div class="param-card">
@@ -537,7 +539,6 @@ function posParamTip(e, box) {
   box.style.top  = y + 'px';
 }
 
-// ── Detail panel ─────────────────────────────────────────
 function openDetail(idx) {
   const r = allData[idx];
   if (!r) return;
@@ -614,7 +615,6 @@ function openDetail(idx) {
 function closeDetail(e){ if(e.target===document.getElementById('detailOverlay')) closeDetailPanel(); }
 function closeDetailPanel(){ document.getElementById('detailOverlay').classList.remove('open'); }
 
-// ── Navigation ────────────────────────────────────────────
 function showPage(id, el) {
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
@@ -622,9 +622,8 @@ function showPage(id, el) {
   el.classList.add('active');
 }
 
-// ── Init ─────────────────────────────────────────────────
 loadData();
 </script>
-<div class="version-badge">v1.5 · 23 Mar 2026</div>
+<div class="version-badge">v1.6 · 26 Mar 2026</div>
 </body>
 </html>
