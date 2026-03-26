@@ -85,6 +85,7 @@
   .td-rank { font-family:'DM Mono',monospace; font-size:12px; color:var(--text-muted); width:40px; }
   .td-rank.top3 { color:var(--accent); font-weight:600; }
   .td-producto { font-weight:500; }
+  .td-variante { font-size:11px; color:var(--text-muted); margin-top:2px; }
   .td-canal { font-size:12px; color:var(--text-muted); }
   .td-motivo { font-size:12px; color:var(--text-muted); max-width:260px; }
   .td-paso { font-size:12px; color:var(--text-muted); max-width:220px; }
@@ -102,8 +103,9 @@
   .plan-card.rank-2 { border-left:3px solid #fcd34d; }
   .plan-card.rank-3 { border-left:3px solid #93c5fd; }
   .plan-rank { font-family:'DM Mono',monospace; font-size:16px; font-weight:500; color:var(--text-dim); padding-top:3px; }
-  .plan-header { display:flex; align-items:center; gap:10px; margin-bottom:5px; flex-wrap:wrap; }
+  .plan-header { display:flex; align-items:center; gap:10px; margin-bottom:2px; flex-wrap:wrap; }
   .plan-producto { font-size:15px; font-weight:600; letter-spacing:-.01em; }
+  .plan-variante { font-size:11px; color:var(--text-muted); margin-bottom:6px; }
   .plan-canal { font-size:12px; color:var(--text-muted); background:var(--surface2); border:1px solid var(--border); padding:2px 7px; border-radius:3px; }
   .plan-motivo { font-size:13px; color:var(--text-muted); margin-bottom:10px; line-height:1.5; }
   .plan-metrics { display:flex; gap:20px; flex-wrap:wrap; }
@@ -121,7 +123,8 @@
   .detail-close:hover { color:var(--text); border-color:var(--accent); }
   .detail-header { display:flex; align-items:flex-start; gap:12px; margin-bottom:18px; padding-bottom:18px; border-bottom:1px solid var(--border); }
   .detail-title-block { flex:1; }
-  .detail-producto { font-size:18px; font-weight:600; letter-spacing:-.02em; margin-bottom:3px; }
+  .detail-producto { font-size:18px; font-weight:600; letter-spacing:-.02em; margin-bottom:2px; }
+  .detail-variante { font-size:12px; color:var(--accent); font-weight:500; margin-bottom:3px; }
   .detail-canal-tag { font-size:12px; color:var(--text-muted); }
   .detail-section { margin-bottom:18px; }
   .detail-section-title { font-size:10px; font-weight:700; color:var(--text-dim); text-transform:uppercase; letter-spacing:.1em; margin-bottom:10px; }
@@ -280,6 +283,7 @@ function pctClass(v){ const n=num(v); return n<0?'negative':n<0.1?'warning':'pos
 function cobClass(v){ const n=num(v); return n<2?'cob-critica':n>8?'cob-alta':'cob-normal'; }
 function badge(a){ const t=(a||'').trim(); return `<span class="badge badge-${t}">${t}</span>`; }
 function isSinVentas(r){ return (r.accion||'').trim() === 'SIN_VENTAS'; }
+function varianteTag(v){ return v ? `<div class="td-variante">${v}</div>` : ''; }
 
 async function loadData() {
   try {
@@ -318,6 +322,7 @@ function renderPlan() {
           <span class="plan-canal">${r.canal_nombre||'-'}</span>
           ${badge(r.accion)}
         </div>
+        ${r.variante ? `<div class="plan-variante">${r.variante}</div>` : ''}
         <div class="plan-motivo">${r.motivo||'-'}</div>
         <div class="plan-metrics">
           <div class="metric">
@@ -352,7 +357,10 @@ function renderTable() {
   const search = (document.getElementById('searchInput')?.value||'').toLowerCase();
   const filterA = document.getElementById('filterAccion')?.value||'';
   let filtered = allData.filter(r => {
-    const ms = !search||(r.producto||'').toLowerCase().includes(search)||(r.canal_nombre||'').toLowerCase().includes(search);
+    const ms = !search||
+      (r.producto||'').toLowerCase().includes(search)||
+      (r.variante||'').toLowerCase().includes(search)||
+      (r.canal_nombre||'').toLowerCase().includes(search);
     const mf = !filterA||(r.accion||'').trim()===filterA;
     return ms&&mf;
   });
@@ -404,7 +412,10 @@ function renderTable() {
     const cobDisplay = isSinVentas(r) ? 'N/A' : num(r.cobertura_stock).toFixed(1)+' sem';
     filas += `<tr onclick="openDetail(${idx})">
       <td class="td-rank ${rank<=3?'top3':''}">${rank||'-'}</td>
-      <td class="td-producto">${r.producto||'-'}</td>
+      <td>
+        <div class="td-producto">${r.producto||'-'}</div>
+        ${varianteTag(r.variante)}
+      </td>
       <td class="td-canal">${r.canal_nombre||'-'}</td>
       <td>${badge(r.accion)}</td>
       <td class="td-motivo">${r.motivo||'-'}</td>
@@ -541,6 +552,7 @@ function openDetail(idx) {
     <div class="detail-header">
       <div class="detail-title-block">
         <div class="detail-producto">${r.producto||'-'}</div>
+        ${r.variante ? `<div class="detail-variante">${r.variante}</div>` : ''}
         <div class="detail-canal-tag">${r.canal_nombre||'-'} · Rank #${num(r.rank_cliente_semana)}</div>
       </div>
       ${badge(r.accion)}
@@ -619,6 +631,6 @@ function showPage(id, el) {
 
 loadData();
 </script>
-<div class="version-badge">v1.7 · 26 Mar 2026</div>
+<div class="version-badge">v1.8 · 26 Mar 2026</div>
 </body>
 </html>
