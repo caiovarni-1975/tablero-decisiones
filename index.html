@@ -33,7 +33,6 @@
   * { margin:0; padding:0; box-sizing:border-box; }
   body { background:var(--bg); color:var(--text); font-family:'DM Sans',sans-serif; font-size:14px; min-height:100vh; transition:background .2s,color .2s; }
 
-  /* Header */
   .header { padding:20px 32px 0; border-bottom:1px solid var(--border); background:var(--surface); transition:background .2s,border-color .2s; }
   .header-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
   .brand { display:flex; align-items:center; gap:10px; }
@@ -50,13 +49,11 @@
   .nav-tab:hover { color:var(--text); }
   .nav-tab.active { color:var(--text); border-bottom-color:var(--accent); }
 
-  /* Pages */
   .page { display:none; padding:24px 32px; }
   .page.active { display:block; }
   .page-title { font-size:20px; font-weight:600; margin-bottom:4px; letter-spacing:-.02em; }
   .page-subtitle { font-size:13px; color:var(--text-muted); margin-bottom:20px; }
 
-  /* Badges */
   .badge { display:inline-flex; align-items:center; padding:3px 8px; border-radius:4px; font-size:11px; font-weight:600; font-family:'DM Mono',monospace; letter-spacing:.04em; border:1px solid; white-space:nowrap; }
   .badge-PAUSAR        { background:var(--pausar-bg);  border-color:var(--pausar-border);  color:var(--pausar-text); }
   .badge-RIESGO_QUIEBRE{ background:var(--quiebre-bg); border-color:var(--quiebre-border); color:var(--quiebre-text); }
@@ -67,7 +64,6 @@
   .badge-SIN_DATOS     { background:var(--surface2);   border-color:var(--border);         color:var(--text-dim); }
   .badge-SIN_VENTAS    { background:var(--sinventas-bg); border-color:var(--sinventas-border); color:var(--sinventas-text); }
 
-  /* Table */
   .table-wrap { background:var(--surface); border:1px solid var(--border); border-radius:8px; overflow:hidden; transition:background .2s,border-color .2s; }
   .table-toolbar { display:flex; align-items:center; gap:10px; padding:12px 16px; border-bottom:1px solid var(--border); flex-wrap:wrap; }
   .search-input { background:var(--surface2); border:1px solid var(--border); border-radius:6px; padding:7px 12px; color:var(--text); font-size:13px; font-family:'DM Sans',sans-serif; width:200px; outline:none; transition:border-color .15s; }
@@ -99,7 +95,6 @@
   .cob-alta    { color:#fcd34d; font-family:'DM Mono',monospace; font-size:12px; }
   .cob-normal  { color:var(--text-muted); font-family:'DM Mono',monospace; font-size:12px; }
 
-  /* Plan semanal cards */
   .plan-grid { display:flex; flex-direction:column; gap:12px; }
   .plan-card { background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:16px 20px; display:grid; grid-template-columns:28px 1fr auto; gap:14px; align-items:start; cursor:pointer; transition:border-color .15s,background .15s; }
   .plan-card:hover { border-color:var(--accent); background:var(--surface2); }
@@ -118,7 +113,6 @@
   .plan-paso { font-size:12px; color:var(--text-muted); margin-top:8px; padding-top:8px; border-top:1px solid var(--border); line-height:1.4; }
   .plan-actions { padding-top:3px; }
 
-  /* Detail overlay */
   .detail-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.75); z-index:100; backdrop-filter:blur(4px); align-items:center; justify-content:center; }
   .detail-overlay.open { display:flex; }
   .detail-panel { background:var(--surface); border:1px solid var(--border); border-radius:12px; width:580px; max-width:95vw; max-height:90vh; overflow-y:auto; padding:26px; position:relative; animation:slideUp .2s ease; }
@@ -140,7 +134,6 @@
   .detail-metric-value { font-family:'DM Mono',monospace; font-size:15px; font-weight:500; }
   .audit-box { background:var(--surface2); border:1px solid var(--border); border-radius:6px; padding:12px; font-family:'DM Mono',monospace; font-size:11px; color:var(--text-muted); line-height:1.9; }
 
-  /* Parametros page */
   .params-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:24px; }
   .param-card { background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:16px 18px; }
   .param-card-title { font-size:11px; font-weight:700; color:var(--text-dim); text-transform:uppercase; letter-spacing:.08em; margin-bottom:12px; }
@@ -164,10 +157,8 @@
   .gastos-table tr:last-child td { border-bottom:none; }
   .gastos-table td:last-child { font-family:'DM Mono',monospace; }
 
-  /* Version badge */
   .version-badge { position:fixed; bottom:12px; right:16px; font-family:'DM Mono',monospace; font-size:10px; color:var(--text-dim); background:var(--surface); border:1px solid var(--border); padding:3px 8px; border-radius:4px; z-index:50; pointer-events:none; letter-spacing:.04em; }
 
-  /* Loading / empty */
   .loading { display:flex; align-items:center; justify-content:center; padding:50px; color:var(--text-muted); font-size:13px; gap:10px; }
   .spinner { width:16px; height:16px; border:2px solid var(--border); border-top-color:var(--accent); border-radius:50%; animation:spin .7s linear infinite; }
   @keyframes spin { to{transform:rotate(360deg)} }
@@ -203,7 +194,6 @@
   </nav>
 </div>
 
-<!-- Plan Semanal -->
 <div class="page active" id="page-plan">
   <div class="page-title">Plan Semanal</div>
   <div class="page-subtitle">Top 3 SKUs más críticos — requieren acción esta semana</div>
@@ -212,7 +202,6 @@
   </div>
 </div>
 
-<!-- Acciones -->
 <div class="page" id="page-acciones">
   <div class="page-title">Acciones</div>
   <div class="page-subtitle">Todas las decisiones por SKU ordenadas por criticidad</div>
@@ -237,7 +226,6 @@
   </div>
 </div>
 
-<!-- Parámetros -->
 <div class="page" id="page-parametros">
   <div class="page-title">Parámetros</div>
   <div class="page-subtitle">Configuración global y por canal que define las decisiones del motor</div>
@@ -246,7 +234,6 @@
   </div>
 </div>
 
-<!-- Detail overlay -->
 <div class="detail-overlay" id="detailOverlay" onclick="closeDetail(event)">
   <div class="detail-panel" id="detailPanel">
     <button class="detail-close" onclick="closeDetailPanel()">✕</button>
@@ -256,10 +243,6 @@
 
 <script>
 const CSV_OUTPUT = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSBCniMPQSL9AB-c0dD4oxxMPp6KFWhZ0POPViUhYDMRdpO9Lp83tvKv7KSS-cgP1NTjPr6VHlwSSV2/pub?gid=1322538543&single=true&output=csv';
-
-const CSV_CLIENTES = '';
-const CSV_CANALES  = '';
-const CSV_GASTOS   = '';
 
 let allData = [];
 let sortCol = 'rank_cliente_semana';
@@ -296,6 +279,7 @@ function money(v){ return '$'+num(v).toLocaleString('es-AR',{minimumFractionDigi
 function pctClass(v){ const n=num(v); return n<0?'negative':n<0.1?'warning':'positive'; }
 function cobClass(v){ const n=num(v); return n<2?'cob-critica':n>8?'cob-alta':'cob-normal'; }
 function badge(a){ const t=(a||'').trim(); return `<span class="badge badge-${t}">${t}</span>`; }
+function isSinVentas(r){ return (r.accion||'').trim() === 'SIN_VENTAS'; }
 
 async function loadData() {
   try {
@@ -317,7 +301,11 @@ async function loadData() {
 }
 
 function renderPlan() {
-  const conDatos = allData.filter(r => r.accion !== 'SIN_DATOS' && r.accion !== 'SIN_VENTAS' && (num(r.precio_actual) > 0 || num(r.ventas_semanales) > 0));
+  const conDatos = allData.filter(r =>
+    r.accion !== 'SIN_DATOS' &&
+    r.accion !== 'SIN_VENTAS' &&
+    (num(r.precio_actual) > 0 || num(r.ventas_semanales) > 0)
+  );
   const top3 = conDatos.slice(0, 3);
   if (!top3.length){ document.getElementById('planGrid').innerHTML='<div class="empty">Sin datos.</div>'; return; }
   const rc = ['rank-1','rank-2','rank-3'];
@@ -393,10 +381,10 @@ function renderTable() {
       ${c.label}${sortCol===c.key?(sortDir==='asc'?' ↑':' ↓'):''}
     </th>`).join('')}</tr></thead>`;
 
-  const conDatos   = filtered.filter(r => r.accion !== 'SIN_DATOS' && r.accion !== 'SIN_VENTAS');
-  const sinVentas  = filtered.filter(r => r.accion === 'SIN_VENTAS');
-  const sinDatos   = filtered.filter(r => r.accion === 'SIN_DATOS');
-  const ordenados  = [...conDatos, ...sinVentas, ...sinDatos];
+  const conDatos  = filtered.filter(r => r.accion !== 'SIN_DATOS' && r.accion !== 'SIN_VENTAS');
+  const sinVentas = filtered.filter(r => r.accion === 'SIN_VENTAS');
+  const sinDatos  = filtered.filter(r => r.accion === 'SIN_DATOS');
+  const ordenados = [...conDatos, ...sinVentas, ...sinDatos];
 
   let filas = '';
   let sepSinVentasInsertado = false;
@@ -413,6 +401,7 @@ function renderTable() {
     }
     const rank = num(r.rank_cliente_semana);
     const idx  = allData.indexOf(r);
+    const cobDisplay = isSinVentas(r) ? 'N/A' : num(r.cobertura_stock).toFixed(1)+' sem';
     filas += `<tr onclick="openDetail(${idx})">
       <td class="td-rank ${rank<=3?'top3':''}">${rank||'-'}</td>
       <td class="td-producto">${r.producto||'-'}</td>
@@ -420,7 +409,7 @@ function renderTable() {
       <td>${badge(r.accion)}</td>
       <td class="td-motivo">${r.motivo||'-'}</td>
       <td class="${pctClass(r.margen_neto_pct)}">${pct(r.margen_neto_pct)}</td>
-      <td class="${cobClass(r.cobertura_stock)}">${num(r.cobertura_stock).toFixed(1)} sem</td>
+      <td class="${cobClass(r.cobertura_stock)}">${cobDisplay}</td>
       <td class="td-paso">${r.proximo_paso||'-'}</td>
     </tr>`;
   });
@@ -542,6 +531,12 @@ function posParamTip(e, box) {
 function openDetail(idx) {
   const r = allData[idx];
   if (!r) return;
+  const sinV = isSinVentas(r);
+  const cobValue = sinV ? 'N/A' : num(r.cobertura_stock).toFixed(1)+' sem';
+  const topeValue = sinV
+    ? '<span style="color:var(--sinventas-text);font-size:11px">Pendiente fix motor</span>'
+    : money(r.tope_economico_sugerido);
+
   document.getElementById('detailContent').innerHTML = `
     <div class="detail-header">
       <div class="detail-title-block">
@@ -581,7 +576,7 @@ function openDetail(idx) {
       </div>
       <div class="detail-metric-card">
         <div class="detail-metric-label">Cobertura</div>
-        <div class="detail-metric-value ${cobClass(r.cobertura_stock)}">${num(r.cobertura_stock).toFixed(1)} sem</div>
+        <div class="detail-metric-value ${cobClass(r.cobertura_stock)}">${cobValue}</div>
       </div>
       <div class="detail-metric-card">
         <div class="detail-metric-label">Precio actual</div>
@@ -593,7 +588,7 @@ function openDetail(idx) {
       </div>
       <div class="detail-metric-card">
         <div class="detail-metric-label">Tope pauta</div>
-        <div class="detail-metric-value">${money(r.tope_economico_sugerido)}</div>
+        <div class="detail-metric-value">${topeValue}</div>
       </div>
       <div class="detail-metric-card">
         <div class="detail-metric-label">Costo prenda</div>
@@ -624,6 +619,6 @@ function showPage(id, el) {
 
 loadData();
 </script>
-<div class="version-badge">v1.6 · 26 Mar 2026</div>
+<div class="version-badge">v1.7 · 26 Mar 2026</div>
 </body>
 </html>
