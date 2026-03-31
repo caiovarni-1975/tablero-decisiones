@@ -289,7 +289,12 @@ async function loadData() {
   try {
     const res = await fetch(CSV_OUTPUT+'&t='+Date.now());
     const text = await res.text();
-    allData = parseCSV(text);
+    const parsed = parseCSV(text);
+
+    // v1.9 — filtrar solo la semana más reciente
+    const maxSemana = parsed.reduce((max, r) => r.semana_eval > max ? r.semana_eval : max, '');
+    allData = parsed.filter(r => r.semana_eval === maxSemana);
+
     allData.sort((a,b) => num(a.rank_cliente_semana)-num(b.rank_cliente_semana));
     if (allData.length) {
       document.getElementById('weekLabel').textContent = 'Semana: '+allData[0].semana_eval;
@@ -631,6 +636,6 @@ function showPage(id, el) {
 
 loadData();
 </script>
-<div class="version-badge">v1.8 · 26 Mar 2026</div>
+<div class="version-badge">v1.9 · 30 Mar 2026</div>
 </body>
 </html>
