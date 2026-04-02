@@ -539,7 +539,7 @@ function renderParametros() {
     const canalesUnicos = [...new Map(paramsData.map(r => [r.canal_id, r])).values()];
     html += canalesUnicos.map(c => {
       const gastosCanal = paramsData.filter(r => r.canal_id === c.canal_id && r.gasto_nombre);
-      const objMargen = c.objetivo_margen_pct ? (num(c.objetivo_margen_pct)*100).toFixed(0)+'%' : '—';
+      const objMargen = c.objetivo_margen_pct ? num(c.objetivo_margen_pct).toFixed(0)+'%' : '—';
       return `
         <div class="canal-table-wrap">
           <div class="canal-header">
@@ -553,7 +553,7 @@ function renderParametros() {
               <tr>
                 <td>${g.gasto_nombre}</td>
                 <td style="color:var(--text-muted)">${g.gasto_modo}</td>
-                <td>${g.gasto_modo==='PCT_SOBRE_VENTA'?(num(g.gasto_valor)*100).toFixed(2)+'%':g.gasto_modo==='MANUAL'?'$'+num(g.gasto_valor).toLocaleString('es-AR')+'/sem':'$'+num(g.gasto_valor).toLocaleString('es-AR')}</td>
+                <td>${g.gasto_modo==='PCT_SOBRE_VENTA'?num(g.gasto_valor).toFixed(2)+'%':g.gasto_modo==='MANUAL'?'$'+num(g.gasto_valor).toLocaleString('es-AR')+'/sem':'$'+num(g.gasto_valor).toLocaleString('es-AR')}</td>
               </tr>`).join('')}
             </tbody>
           </table>` : '<div style="padding:12px 14px;font-size:12px;color:var(--text-muted)">Sin gastos configurados.</div>'}
@@ -686,6 +686,6 @@ function showPage(id, el) {
 
 loadData();
 </script>
-<div class="version-badge">v1.12 · 02 Apr 2026</div>
+<div class="version-badge">v1.13 · 02 Apr 2026</div>
 </body>
 </html>
