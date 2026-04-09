@@ -460,7 +460,7 @@ function renderTable() {
     }
     const rank = num(r.rank_cliente_semana);
     const idx  = allData.indexOf(r);
-    const cobDisplay = isSinVentas(r) ? 'N/A' : num(r.cobertura_stock).toFixed(1)+' sem';
+    const cobDisplay = (r.accion === 'ACTIVAR' || num(r.cobertura_stock) >= 999) ? '—' : num(r.cobertura_stock).toFixed(1)+' sem';
     filas += `<tr onclick="openDetail(${idx})">
       <td class="td-rank ${rank<=3?'top3':''}">${rank||'-'}</td>
       <td>
@@ -696,6 +696,6 @@ function showPage(id, el) {
 
 loadData();
 </script>
-<div class="version-badge">v1.13 · 02 Apr 2026</div>
+<div class="version-badge">v1.14 · 09 Apr 2026</div>
 </body>
 </html>
