@@ -386,7 +386,7 @@ function renderPlan() {
             <span class="metric-value ${cobClass(r.cobertura_stock)}">${num(r.cobertura_stock).toFixed(1)} sem</span>
           </div>
           <div class="metric">
-            <span class="metric-label">Ventas/sem</span>
+            <span class="metric-label">Ventas últ. sem.</span>
             <span class="metric-value">${r.ventas_semanales||'0'}</span>
           </div>
           <div class="metric">
@@ -678,7 +678,7 @@ function openDetail(idx) {
         <div class="detail-metric-value ${pctClass(r.margen_neto_pct)}">${pct(r.margen_neto_pct)}</div>
       </div>
       <div class="detail-metric-card">
-        <div class="detail-metric-label">Ventas/sem</div>
+        <div class="detail-metric-label">Ventas últ. sem.</div>
         <div class="detail-metric-value">${r.ventas_semanales||'0'}</div>
       </div>
       <div class="detail-metric-card">
@@ -734,6 +734,6 @@ function showPage(id, el) {
 
 loadData();
 </script>
-<div class="version-badge">v1.16 · 09 Apr 2026</div>
+<div class="version-badge">v1.17 · 09 Apr 2026</div>
 </body>
 </html>
