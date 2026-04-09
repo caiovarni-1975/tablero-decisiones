@@ -394,8 +394,8 @@ function renderPlan() {
             <span class="metric-value ${cobClass(r.cobertura_stock)}">${num(r.cobertura_stock).toFixed(1)} sem</span>
           </div>
           <div class="metric">
-            <span class="metric-label">Ventas últ. sem.</span>
-            <span class="metric-value">${r.ventas_semanales||'0'}</span>
+            <span class="metric-label">Últ. venta</span>
+            <span class="metric-value">${lastSaleLabel(r)}</span>
           </div>
           <div class="metric">
             <span class="metric-label">Precio actual</span>
@@ -620,6 +620,15 @@ function posParamTip(e, box) {
   box.style.top  = y + 'px';
 }
 
+function lastSaleLabel(r) {
+  let rows = [];
+  try { rows = JSON.parse(r.historial_json || '[]'); } catch(e) {}
+  const withSales = rows.filter(v => v.u > 0);
+  if (!withSales.length) return '—';
+  const last = withSales[withSales.length - 1];
+  return last.s ? last.s.substring(5).split('-').reverse().join('/') : '—';
+}
+
 function buildHistorialHTML(r) {
   let rows = [];
   try { rows = JSON.parse(r.historial_json || '[]'); } catch(e) {}
@@ -679,8 +688,8 @@ function openDetail(idx) {
         <div class="detail-metric-value ${pctClass(r.margen_neto_pct)}">${pct(r.margen_neto_pct)}</div>
       </div>
       <div class="detail-metric-card">
-        <div class="detail-metric-label">Ventas últ. sem.</div>
-        <div class="detail-metric-value">${r.ventas_semanales||'0'}</div>
+        <div class="detail-metric-label">Últ. venta</div>
+        <div class="detail-metric-value">${lastSaleLabel(r)}</div>
       </div>
       <div class="detail-metric-card">
         <div class="detail-metric-label">Dem. referencia</div>
@@ -735,6 +744,6 @@ function showPage(id, el) {
 
 loadData();
 </script>
-<div class="version-badge">v1.19 · 09 Apr 2026</div>
+<div class="version-badge">v1.20 · 09 Apr 2026</div>
 </body>
 </html>
