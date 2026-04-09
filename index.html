@@ -666,11 +666,11 @@ function openDetail(idx) {
         <div class="detail-field-label">Próximo paso</div>
         <div class="detail-field-value">${r.proximo_paso||'-'}</div>
       </div>
-      ${r.canal_sugerido_rentabilidad_actual && r.canal_sugerido_rentabilidad_actual!==r.canal_id?`
+      ${r.canal_sugerido_rentabilidad_actual && r.canal_sugerido_rentabilidad_actual!=='NINGUNO_VIABLE' && r.canal_sugerido_rentabilidad_actual!==r.canal_id?`
       <div class="detail-field">
         <div class="detail-field-label">Canal más rentable</div>
         <div class="detail-field-value">${r.canal_sugerido_rentabilidad_actual}</div>
-      </div>`:''}
+      <\/div>`:''}
     </div>
     <div class="detail-metrics-grid">
       <div class="detail-metric-card">
@@ -734,6 +734,6 @@ function showPage(id, el) {
 
 loadData();
 </script>
-<div class="version-badge">v1.15 · 09 Apr 2026</div>
+<div class="version-badge">v1.16 · 09 Apr 2026</div>
 </body>
 </html>
