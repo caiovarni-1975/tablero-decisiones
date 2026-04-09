@@ -138,6 +138,14 @@
   .detail-metric-label { font-size:10px; color:var(--text-dim); text-transform:uppercase; letter-spacing:.06em; font-weight:600; margin-bottom:3px; }
   .detail-metric-value { font-family:'DM Mono',monospace; font-size:15px; font-weight:500; }
   .audit-box { background:var(--surface2); border:1px solid var(--border); border-radius:6px; padding:12px; font-family:'DM Mono',monospace; font-size:11px; color:var(--text-muted); line-height:1.9; }
+  .historial-table { width:100%; border-collapse:collapse; font-size:11px; font-family:'DM Mono',monospace; }
+  .historial-table th { color:var(--text-dim); text-transform:uppercase; letter-spacing:.06em; font-size:10px; font-weight:600; text-align:right; padding:4px 8px; border-bottom:1px solid var(--border); }
+  .historial-table th:first-child { text-align:left; }
+  .historial-table td { padding:5px 8px; text-align:right; color:var(--text-muted); border-bottom:1px solid rgba(255,255,255,.04); }
+  .historial-table td:first-child { text-align:left; color:var(--text); }
+  .historial-table tr.contaminada td { opacity:.55; text-decoration:line-through; }
+  .historial-table tr:last-child td { border-bottom:none; }
+  .hist-empty { font-size:12px; color:var(--text-dim); padding:8px 0; }
 
   .params-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:24px; }
   .param-card { background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:16px 18px; }
@@ -306,7 +314,7 @@ function money(v){ return '$'+num(v).toLocaleString('es-AR',{minimumFractionDigi
 function pctClass(v){ const n=num(v); return n<0?'negative':n<0.1?'warning':'positive'; }
 function cobClass(v){ const n=num(v); return n<2?'cob-critica':n>8?'cob-alta':'cob-normal'; }
 function badge(a){ const t=(a||'').trim(); return `<span class="badge badge-${t}">${t}</span>`; }
-function isSinVentas(r){ return (r.accion||'').trim() === 'SIN_VENTAS'; }
+function isSinVentas(r){ return (r.accion||'').trim() === 'ACTIVAR'; }
 function varianteTag(v){ return v ? `<div class="td-variante">${v}</div>` : ''; }
 
 async function loadData() {
@@ -604,14 +612,40 @@ function posParamTip(e, box) {
   box.style.top  = y + 'px';
 }
 
+function buildHistorialHTML(r) {
+  let rows = [];
+  try { rows = JSON.parse(r.historial_json || '[]'); } catch(e) {}
+  if (!rows.length) return '<div class="hist-empty">Sin historial registrado.</div>';
+  const costoUnit = num(r.costo_prenda_auditoria);
+  const header = `<table class="historial-table"><thead><tr>
+    <th>Semana</th><th>Unid.</th><th>Venta Bruta</th><th>Desctos.</th><th>Pauta</th><th>Margen Est.</th>
+  </tr></thead><tbody>`;
+  const bodyRows = rows.map(v => {
+    const neto = v.b - v.d;
+    const costo = costoUnit * v.u;
+    const margenEst = neto > 0 ? (neto - v.p - costo) / neto : null;
+    const margenTxt = margenEst !== null && v.u > 0
+      ? `<span class="${margenEst < 0 ? 'negative' : margenEst < 0.1 ? 'warning' : 'positive'}">${(margenEst*100).toFixed(1)}%</span>`
+      : '—';
+    const semLabel = v.s ? v.s.substring(5).split('-').reverse().join('/') : '—';
+    return `<tr class="${v.c ? 'contaminada' : ''}">
+      <td>${semLabel}${v.c ? ' ⚠' : ''}</td>
+      <td>${v.u}</td>
+      <td>${money(v.b)}</td>
+      <td>${v.d > 0 ? money(v.d) : '—'}</td>
+      <td>${v.p > 0 ? money(v.p) : '—'}</td>
+      <td>${margenTxt}</td>
+    </tr>`;
+  }).join('');
+  return header + bodyRows + '</tbody></table>';
+}
+
 function openDetail(idx) {
   const r = allData[idx];
   if (!r) return;
-  const sinV = isSinVentas(r);
-  const cobValue = sinV ? 'N/A' : num(r.cobertura_stock).toFixed(1)+' sem';
-  const topeValue = sinV
-    ? '<span style="color:var(--sinventas-text);font-size:11px">Pendiente fix motor</span>'
-    : money(r.tope_economico_sugerido);
+  const isActivar = (r.accion||'').trim() === 'ACTIVAR';
+  const cobValue = (isActivar || num(r.cobertura_stock) >= 999) ? '—' : num(r.cobertura_stock).toFixed(1)+' sem';
+  const topeValue = money(r.tope_economico_sugerido);
 
   document.getElementById('detailContent').innerHTML = `
     <div class="detail-header">
@@ -677,6 +711,10 @@ function openDetail(idx) {
       </div>
     </div>
     <div class="detail-section">
+      <div class="detail-section-title">Historial de ventas</div>
+      ${buildHistorialHTML(r)}
+    </div>
+    <div class="detail-section">
       <div class="detail-section-title">Auditoría</div>
       <div class="audit-box">${(r.auditoria_comparativa||'-').split('|').map(s=>`<div>${s.trim()}</div>`).join('')}</div>
     </div>
@@ -696,6 +734,6 @@ function showPage(id, el) {
 
 loadData();
 </script>
-<div class="version-badge">v1.14 · 09 Apr 2026</div>
+<div class="version-badge">v1.15 · 09 Apr 2026</div>
 </body>
 </html>
