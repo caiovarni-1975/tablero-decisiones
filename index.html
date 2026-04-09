@@ -626,15 +626,9 @@ function buildHistorialHTML(r) {
   if (!rows.length) return '<div class="hist-empty">Sin historial registrado.</div>';
   const costoUnit = num(r.costo_prenda_auditoria);
   const header = `<table class="historial-table"><thead><tr>
-    <th>Semana</th><th>Unid.</th><th>Venta Bruta</th><th>Desctos.</th><th>Pauta</th><th>Margen Est.</th>
+    <th>Semana</th><th>Unid.</th><th>Venta Bruta</th><th>Desctos.</th><th>Pauta</th>
   </tr></thead><tbody>`;
   const bodyRows = rows.map(v => {
-    const neto = v.b - v.d;
-    const costo = costoUnit * v.u;
-    const margenEst = neto > 0 ? (neto - v.p - costo) / neto : null;
-    const margenTxt = margenEst !== null && v.u > 0
-      ? `<span class="${margenEst < 0 ? 'negative' : margenEst < 0.1 ? 'warning' : 'positive'}">${(margenEst*100).toFixed(1)}%</span>`
-      : '—';
     const semLabel = v.s ? v.s.substring(5).split('-').reverse().join('/') : '—';
     return `<tr class="${v.c ? 'contaminada' : ''}">
       <td>${semLabel}${v.c ? ' ⚠' : ''}</td>
@@ -642,7 +636,6 @@ function buildHistorialHTML(r) {
       <td>${money(v.b)}</td>
       <td>${v.d > 0 ? money(v.d) : '—'}</td>
       <td>${v.p > 0 ? money(v.p) : '—'}</td>
-      <td>${margenTxt}</td>
     </tr>`;
   }).join('');
   return header + bodyRows + '</tbody></table>';
@@ -742,6 +735,6 @@ function showPage(id, el) {
 
 loadData();
 </script>
-<div class="version-badge">v1.18 · 09 Apr 2026</div>
+<div class="version-badge">v1.19 · 09 Apr 2026</div>
 </body>
 </html>
