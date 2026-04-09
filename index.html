@@ -279,11 +279,15 @@ function parseCSV(text) {
     const vals = []; let cur = ''; let inQ = false;
     for (let i=0; i<line.length; i++) {
       const c = line[i];
-      if (c==='"'){inQ=!inQ;continue;}
-      if (c===','&&!inQ){vals.push(cur.trim());cur='';continue;}
+      if (c==='"') {
+        if (inQ && line[i+1]==='"') { cur+='"'; i++; } // "" → escaped quote
+        else { inQ=!inQ; }
+        continue;
+      }
+      if (c===','&&!inQ){vals.push(cur);cur='';continue;}
       cur+=c;
     }
-    vals.push(cur.trim());
+    vals.push(cur);
     const obj = {};
     headers.forEach((h,i) => obj[h] = vals[i]||'');
     return obj;
@@ -297,11 +301,15 @@ function parseCSVGeneric(text) {
     const vals = []; let cur = ''; let inQ = false;
     for (let i=0; i<line.length; i++) {
       const c = line[i];
-      if (c==='"'){inQ=!inQ;continue;}
-      if (c===','&&!inQ){vals.push(cur.trim());cur='';continue;}
+      if (c==='"') {
+        if (inQ && line[i+1]==='"') { cur+='"'; i++; } // "" → escaped quote
+        else { inQ=!inQ; }
+        continue;
+      }
+      if (c===','&&!inQ){vals.push(cur);cur='';continue;}
       cur+=c;
     }
-    vals.push(cur.trim());
+    vals.push(cur);
     const obj = {};
     headers.forEach((h,i) => obj[h] = vals[i]||'');
     return obj;
@@ -734,6 +742,6 @@ function showPage(id, el) {
 
 loadData();
 </script>
-<div class="version-badge">v1.17 · 09 Apr 2026</div>
+<div class="version-badge">v1.18 · 09 Apr 2026</div>
 </body>
 </html>
