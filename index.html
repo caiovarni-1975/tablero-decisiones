@@ -15,7 +15,8 @@
     --ajustar-bg: #0a1628; --ajustar-border: #1e3a5f; --ajustar-text: #93c5fd;
     --empujar-bg: #0a1f0f; --empujar-border: #14532d; --empujar-text: #86efac;
     --ok-bg: #141420; --ok-border: #2a2a40; --ok-text: #a5b4fc;
-    --sinventas-bg: #1a1200; --sinventas-border: #78350f; --sinventas-text: #fb923c;
+    --activar-bg: #0a1628; --activar-border: #1d4ed8; --activar-text: #60a5fa;
+    --monitorear-bg: #1a1a1a; --monitorear-border: #404040; --monitorear-text: #a0a0a0;
   }
 
   body.light {
@@ -27,7 +28,8 @@
     --ajustar-bg: #eff6ff; --ajustar-border: #93c5fd; --ajustar-text: #1e40af;
     --empujar-bg: #f0fdf4; --empujar-border: #86efac; --empujar-text: #14532d;
     --ok-bg: #eef2ff; --ok-border: #a5b4fc; --ok-text: #3730a3;
-    --sinventas-bg: #fff7ed; --sinventas-border: #fdba74; --sinventas-text: #c2410c;
+    --activar-bg: #eff6ff; --activar-border: #93c5fd; --activar-text: #1d4ed8;
+    --monitorear-bg: #f5f5f5; --monitorear-border: #d4d4d4; --monitorear-text: #737373;
   }
 
   * { margin:0; padding:0; box-sizing:border-box; }
@@ -60,9 +62,9 @@
   .badge-LIQUIDAR      { background:var(--liquidar-bg);border-color:var(--liquidar-border);color:var(--liquidar-text); }
   .badge-AJUSTAR_PRECIO{ background:var(--ajustar-bg); border-color:var(--ajustar-border); color:var(--ajustar-text); }
   .badge-EMPUJAR       { background:var(--empujar-bg); border-color:var(--empujar-border); color:var(--empujar-text); }
-  .badge-OK            { background:var(--ok-bg);      border-color:var(--ok-border);      color:var(--ok-text); }
-  .badge-SIN_DATOS     { background:var(--surface2);   border-color:var(--border);         color:var(--text-dim); }
-  .badge-SIN_VENTAS    { background:var(--sinventas-bg); border-color:var(--sinventas-border); color:var(--sinventas-text); }
+  .badge-ACTIVAR       { background:var(--activar-bg);    border-color:var(--activar-border);    color:var(--activar-text); }
+  .badge-MONITOREAR    { background:var(--monitorear-bg); border-color:var(--monitorear-border); color:var(--monitorear-text); }
+  .badge-SIN_DATOS     { background:var(--surface2);      border-color:var(--border);            color:var(--text-dim); }
 
   .table-wrap { background:var(--surface); border:1px solid var(--border); border-radius:8px; overflow:hidden; transition:background .2s,border-color .2s; }
   .table-toolbar { display:flex; align-items:center; gap:10px; padding:12px 16px; border-bottom:1px solid var(--border); flex-wrap:wrap; }
@@ -218,8 +220,9 @@
         <option value="LIQUIDAR">LIQUIDAR</option>
         <option value="AJUSTAR_PRECIO">AJUSTAR_PRECIO</option>
         <option value="EMPUJAR">EMPUJAR</option>
-        <option value="OK">OK</option>
-        <option value="SIN_VENTAS">SIN_VENTAS</option>
+        <option value="ACTIVAR">ACTIVAR</option>
+        <option value="MONITOREAR">MONITOREAR</option>
+        <option value="SIN_DATOS">SIN_DATOS</option>
       </select>
       <span class="record-count" id="recordCount"></span>
     </div>
@@ -430,19 +433,26 @@ function renderTable() {
       ${c.label}${sortCol===c.key?(sortDir==='asc'?' ↑':' ↓'):''}
     </th>`).join('')}</tr></thead>`;
 
-  const conDatos  = filtered.filter(r => r.accion !== 'SIN_DATOS' && r.accion !== 'SIN_VENTAS');
-  const sinVentas = filtered.filter(r => r.accion === 'SIN_VENTAS');
+  const bottomActions = ['ACTIVAR','MONITOREAR','SIN_DATOS'];
+  const conDatos  = filtered.filter(r => !bottomActions.includes(r.accion));
+  const activar   = filtered.filter(r => r.accion === 'ACTIVAR');
+  const monitorear= filtered.filter(r => r.accion === 'MONITOREAR');
   const sinDatos  = filtered.filter(r => r.accion === 'SIN_DATOS');
-  const ordenados = [...conDatos, ...sinVentas, ...sinDatos];
+  const ordenados = [...conDatos, ...activar, ...monitorear, ...sinDatos];
 
   let filas = '';
-  let sepSinVentasInsertado = false;
-  let sepSinDatosInsertado  = false;
+  let sepActivarInsertado    = false;
+  let sepMonitorearInsertado = false;
+  let sepSinDatosInsertado   = false;
 
   ordenados.forEach(r => {
-    if (!sepSinVentasInsertado && r.accion === 'SIN_VENTAS') {
-      sepSinVentasInsertado = true;
-      filas += `<tr style="cursor:default"><td colspan="8" style="padding:10px 14px;font-size:10px;font-weight:700;color:var(--sinventas-text);text-transform:uppercase;letter-spacing:.1em;background:var(--sinventas-bg);border-bottom:1px solid var(--border);">Canal sin ventas esta semana</td></tr>`;
+    if (!sepActivarInsertado && r.accion === 'ACTIVAR') {
+      sepActivarInsertado = true;
+      filas += `<tr style="cursor:default"><td colspan="8" style="padding:10px 14px;font-size:10px;font-weight:700;color:var(--activar-text);text-transform:uppercase;letter-spacing:.1em;background:var(--activar-bg);border-bottom:1px solid var(--border);">Stock sin movimiento — activar canal</td></tr>`;
+    }
+    if (!sepMonitorearInsertado && r.accion === 'MONITOREAR') {
+      sepMonitorearInsertado = true;
+      filas += `<tr style="cursor:default"><td colspan="8" style="padding:10px 14px;font-size:10px;font-weight:700;color:var(--monitorear-text);text-transform:uppercase;letter-spacing:.1em;background:var(--monitorear-bg);border-bottom:1px solid var(--border);">Monitorear — historial insuficiente para acción fuerte</td></tr>`;
     }
     if (!sepSinDatosInsertado && r.accion === 'SIN_DATOS') {
       sepSinDatosInsertado = true;
