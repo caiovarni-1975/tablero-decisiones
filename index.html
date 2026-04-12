@@ -143,7 +143,9 @@
   .historial-table th:first-child { text-align:left; }
   .historial-table td { padding:5px 8px; text-align:right; color:var(--text-muted); border-bottom:1px solid rgba(255,255,255,.04); }
   .historial-table td:first-child { text-align:left; color:var(--text); }
-  .historial-table tr.contaminada td { opacity:.55; text-decoration:line-through; }
+  /* FIX: semanas contaminadas — solo opacidad, sin tachado */
+  .historial-table tr.contaminada td { opacity:.55; }
+  .historial-table tr.historial-total td { border-top:1px solid var(--border); color:var(--text); font-weight:600; }
   .historial-table tr:last-child td { border-bottom:none; }
   .hist-empty { font-size:12px; color:var(--text-dim); padding:8px 0; }
 
@@ -280,7 +282,7 @@ function parseCSV(text) {
     for (let i=0; i<line.length; i++) {
       const c = line[i];
       if (c==='"') {
-        if (inQ && line[i+1]==='"') { cur+='"'; i++; } // "" → escaped quote
+        if (inQ && line[i+1]==='"') { cur+='"'; i++; }
         else { inQ=!inQ; }
         continue;
       }
@@ -302,7 +304,7 @@ function parseCSVGeneric(text) {
     for (let i=0; i<line.length; i++) {
       const c = line[i];
       if (c==='"') {
-        if (inQ && line[i+1]==='"') { cur+='"'; i++; } // "" → escaped quote
+        if (inQ && line[i+1]==='"') { cur+='"'; i++; }
         else { inQ=!inQ; }
         continue;
       }
@@ -322,7 +324,6 @@ function money(v){ return '$'+num(v).toLocaleString('es-AR',{minimumFractionDigi
 function pctClass(v){ const n=num(v); return n<0?'negative':n<0.1?'warning':'positive'; }
 function cobClass(v){ const n=num(v); return n<2?'cob-critica':n>8?'cob-alta':'cob-normal'; }
 function badge(a){ const t=(a||'').trim(); return `<span class="badge badge-${t}">${t}</span>`; }
-function isSinVentas(r){ return (r.accion||'').trim() === 'ACTIVAR'; }
 function varianteTag(v){ return v ? `<div class="td-variante">${v}</div>` : ''; }
 
 async function loadData() {
@@ -367,7 +368,6 @@ async function loadData() {
 function renderPlan() {
   const conDatos = allData.filter(r =>
     r.accion !== 'SIN_DATOS' &&
-    r.accion !== 'SIN_VENTAS' &&
     (num(r.precio_actual) > 0 || num(r.ventas_semanales) > 0)
   );
   const top3 = conDatos.slice(0, 3);
@@ -508,7 +508,6 @@ function ptip(title, text) {
 function renderParametros() {
   if (!allData.length) return;
 
-  // Umbrales y pesos — desde primera fila de paramsData si existe, sino defaults
   const p0 = paramsData.length ? paramsData[0] : {};
   const umbralBajo     = p0.umbral_stock_bajo  || 2;
   const umbralSobre    = p0.umbral_sobrestock   || 8;
@@ -560,7 +559,6 @@ function renderParametros() {
     <div class="page-subtitle" style="margin-bottom:16px">Configuración por canal</div>
   `;
 
-  // Canales desde paramsData real
   if (paramsData.length) {
     const canalesUnicos = [...new Map(paramsData.map(r => [r.canal_id, r])).values()];
     html += canalesUnicos.map(c => {
@@ -633,10 +631,11 @@ function buildHistorialHTML(r) {
   let rows = [];
   try { rows = JSON.parse(r.historial_json || '[]'); } catch(e) {}
   if (!rows.length) return '<div class="hist-empty">Sin historial registrado.</div>';
-  const costoUnit = num(r.costo_prenda_auditoria);
+
   const header = `<table class="historial-table"><thead><tr>
     <th>Semana</th><th>Unid.</th><th>Venta Bruta</th><th>Desctos.</th><th>Pauta</th>
   </tr></thead><tbody>`;
+
   const bodyRows = rows.map(v => {
     const semLabel = v.s ? v.s.substring(5).split('-').reverse().join('/') : '—';
     return `<tr class="${v.c ? 'contaminada' : ''}">
@@ -647,7 +646,20 @@ function buildHistorialHTML(r) {
       <td>${v.p > 0 ? money(v.p) : '—'}</td>
     </tr>`;
   }).join('');
-  return header + bodyRows + '</tbody></table>';
+
+  // Fila de totales
+  const totalU = rows.reduce((s, v) => s + num(v.u), 0);
+  const totalB = rows.reduce((s, v) => s + num(v.b), 0);
+  const totalP = rows.reduce((s, v) => s + num(v.p), 0);
+  const totalsRow = `<tr class="historial-total">
+    <td>Total</td>
+    <td>${totalU} u</td>
+    <td>${money(totalB)}</td>
+    <td>—</td>
+    <td>${totalP > 0 ? money(totalP) : '—'}</td>
+  </tr>`;
+
+  return header + bodyRows + totalsRow + '</tbody></table>';
 }
 
 function openDetail(idx) {
@@ -655,6 +667,8 @@ function openDetail(idx) {
   if (!r) return;
   const isActivar = (r.accion||'').trim() === 'ACTIVAR';
   const cobValue = (isActivar || num(r.cobertura_stock) >= 999) ? '—' : num(r.cobertura_stock).toFixed(1)+' sem';
+  // FIX: demanda_referencia muestra N/A para items sin ventas (ACTIVAR)
+  const demRefValue = isActivar ? 'N/A' : num(r.demanda_referencia).toFixed(1)+'/sem';
   const topeValue = money(r.tope_economico_sugerido);
 
   document.getElementById('detailContent').innerHTML = `
@@ -693,7 +707,7 @@ function openDetail(idx) {
       </div>
       <div class="detail-metric-card">
         <div class="detail-metric-label">Dem. referencia</div>
-        <div class="detail-metric-value">${num(r.demanda_referencia).toFixed(1)}/sem</div>
+        <div class="detail-metric-value">${demRefValue}</div>
       </div>
       <div class="detail-metric-card">
         <div class="detail-metric-label">Cobertura</div>
@@ -744,6 +758,6 @@ function showPage(id, el) {
 
 loadData();
 </script>
-<div class="version-badge">v1.20 · 09 Apr 2026</div>
+<div class="version-badge">v1.21 · 12 Apr 2026</div>
 </body>
 </html>
